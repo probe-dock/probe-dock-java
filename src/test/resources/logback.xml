@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--<!DOCTYPE log4j:configuration SYSTEM "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">-->
+
+<configuration>
+	<appender name="stdOut" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.apache" level="WARN" />
+			
+	<logger name="io.probedock" level="TRACE" />
+
+	<root level="TRACE">
+		<appender-ref ref="stdOut" />
+	</root>
+</configuration>
