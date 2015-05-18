@@ -13,7 +13,7 @@
     <name>Probe Dock Client Java</name>
     <description>Base code to write Probe Dock clients in Java</description>
 
-    <url>https://github.com/lotaris/rox-client-java</url>
+    <url>https://github.com/probe-dock/probe-dock-java</url>
 
     <licenses>
         <license>
