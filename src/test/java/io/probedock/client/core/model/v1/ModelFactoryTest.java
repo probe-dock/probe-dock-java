@@ -58,15 +58,6 @@ public class ModelFactoryTest {
 	}
 	
 	@Test
-	public void testCreationWithMissingMandatoryAttributes() {
-		try {
-			ModelFactory.createTestResult(null, null, null, 0L, null, true, false, null, null, null);
-			fail("The test should not be created without a key");
-		}
-		catch (IllegalArgumentException iae) {}
-	}
-	
-	@Test
 	public void testFailedWithEmptyMessageShouldBeFilledWithDefaultMessage() {
 		TestResult testResult = ModelFactory.createTestResult("key", null, null, 0L, "", false, false, null, null, null);
 		assertEquals("No content for the message provided for the failing testResult", testResult.getMessage());

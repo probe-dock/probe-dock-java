@@ -68,10 +68,6 @@ public class ModelFactory {
 											  long duration, String message, boolean passed, Boolean active,
 											  Set<String> tags, Set<String> tickets, Map<String, String> data) {
 		
-		if (key == null) {
-			throw new IllegalArgumentException("The key must be specified.");
-		}
-		
 		TestResult testResult = new TestResult();
 
 		if (!passed) {
@@ -86,8 +82,11 @@ public class ModelFactory {
 		if (duration < 0) {
 			throw new IllegalArgumentException("The duration cannot be negative.");
 		}
-				
-		testResult.setKey(key);
+
+		if (key != null && !key.isEmpty()) {
+			testResult.setKey(key);
+		}
+
 		testResult.setName(name);
 		testResult.setDuration(duration);
 		testResult.setPassed(passed);

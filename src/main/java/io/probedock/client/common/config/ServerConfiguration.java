@@ -2,7 +2,6 @@ package io.probedock.client.common.config;
 
 import io.probedock.client.common.utils.FootprintGenerator;
 
-import java.net.URLConnection;
 import java.util.Map;
 
 /**
@@ -15,7 +14,6 @@ public class ServerConfiguration {
 	private String name;
 	private String apiUrl;
 	private String apiToken;
-	private String apiKeySecret;
 	private String projectApiId;
 	private ProxyConfiguration proxyConfiguration;
 	
@@ -40,16 +38,12 @@ public class ServerConfiguration {
 		}
 	}
 
-	public void configureAuthentication(URLConnection connection) {
-		connection.setRequestProperty("Authorization", "Bearer " + this.apiToken);
-	}
-
 	public String getBaseUrlFootprint() {
 		return FootprintGenerator.footprint(apiUrl);
 	}
 
 	public boolean isValid() {
-		return apiUrl != null && apiToken != null && apiKeySecret != null;
+		return apiUrl != null && apiToken != null;
 	}
 
 	public String getName() {
@@ -88,10 +82,6 @@ public class ServerConfiguration {
 		builder.append("name: \"").append(name).append("\"");
 		builder.append(", apiUrl: \"").append(apiUrl).append("\"");
 		builder.append(", apiToken: \"").append(apiToken).append("\"");
-
-		if (apiKeySecret != null) {
-			builder.append(", apiKeySecret: \"").append(apiKeySecret.replaceAll("[.]", "*")).append("\"");
-		}
 
 		builder.append(", projectApiId: \"").append(projectApiId).append("\"");
 		

@@ -1,5 +1,6 @@
 package io.probedock.client.common.model.v1;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.probedock.client.common.model.ProbeTestRun;
 import io.probedock.client.commons.optimize.Optimizer;
@@ -38,6 +39,7 @@ public class TestRun implements ProbeTestRun {
 	}
 
 	@Override
+	@JsonIgnore
 	public Optimizer getOptimizer() {
 		return new TestRunOptimizer();
 	}

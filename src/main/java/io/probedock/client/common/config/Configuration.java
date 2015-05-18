@@ -43,7 +43,7 @@ public class Configuration {
 	/**
 	 * Configuration placed in the classpath
 	 */
-	private static final String CLASSPATH_CONFIG = "config.yml";
+	private static final String CLASSPATH_CONFIG = "probe-dock.yml";
 	
 	/**
 	 * The UID file name

@@ -1,7 +1,5 @@
 package io.probedock.client.core.connector;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.probedock.client.common.config.Configuration;
 import io.probedock.client.common.config.ServerConfiguration;
 import io.probedock.client.common.model.ProbeTestRun;
@@ -24,12 +22,15 @@ import java.nio.charset.Charset;
  */
 public class Connector {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Connector.class);
-	private static final String API_ROOT_MEDIA_TYPE = "application/hal+json";
-	private static final String API_TEST_PAYLOAD_MEDIA_TYPE = "application/vnd.lotaris.rox.payload.v1+json";
-	private static final String API_ROOT_TEST_PAYLOAD_LINK = "v1:test-payloads";
+
+	private static final String CONTENT_TYPE = "application/vnd.probe-dock.payload.v1+json";
+
 	private static final int CONNECTION_TIMEOUT = 10000;
+
 	private Configuration configuration;
+
 	private ProbeSerializer serializer;
+
 	/**
 	 * Optimization store
 	 */
@@ -46,153 +47,82 @@ public class Connector {
 	}
 
 	/**
-	 * Send a payload to ROX
+	 * Send a payload to Probe Dock
 	 *
-	 * @param payload The payload to send
-	 * @return True if the payload successfully sent to ROX
+	 * @param testRun The test run to send
+	 * @return True if the test run successfully sent to Probe Dock
 	 * @throws MalformedURLException
 	 */
-	public boolean send(ProbeTestRun payload) throws MalformedURLException {
-
-		final URL payloadResourceUrl = getPayloadResourceUrl();
-		if (payloadResourceUrl == null) {
-			return false;
-		}
-
+	public boolean send(ProbeTestRun testRun) throws MalformedURLException {
 		LOGGER.info("Connected to Probe Dock API at {}", configuration.getServerConfiguration().getApiUrl());
 
 		// Print the payload to the outout stream
 		if (configuration.isPayloadPrint()) {
-			OutputStreamWriter payloadOsw = null;
-			try {
-				payloadOsw = new OutputStreamWriter(System.out);
-				serializer.serializePayload(payloadOsw, payload, true);
-			} catch (IOException ioe) {
-			} finally {
-				if (payloadOsw != null) {
-					try {
-						payloadOsw.close();
-					} catch (IOException closeIoe) {
-					}
-				}
+			try (OutputStreamWriter testRunOsw = new OutputStreamWriter(System.out)) {
+				serializer.serializePayload(testRunOsw, testRun, true);
 			}
+			catch (IOException ioe) {}
 		}
 
-		// Try to send the payload optimized
+		// Try to send the test run optimized
 		optimizeStart();
-		boolean result = sendPayload(payloadResourceUrl, optimize(payload), true);
+		boolean result = sendTestRun(optimize(testRun), true);
 		optimizeStop(result);
 
 		// If the payload was not sent optimized, try to send it non-optimized
 		if (!result) {
-			result = sendPayload(payloadResourceUrl, payload, false);
+			result = sendTestRun(testRun, false);
 		}
 
 		return result;
 	}
 
-	private URL getPayloadResourceUrl() {
-
-		final URL url;
-		try {
-			url = new URL(configuration.getServerConfiguration().getApiUrl());
-		} catch (MalformedURLException ex) {
-			LOGGER.error("The selected Probe Dock server's API URL is not a valid URL.", ex);
-			return null;
-		}
-
-		try {
-			final HttpURLConnection conn = openConnection(configuration.getServerConfiguration(), url);
-
-			conn.setRequestMethod("GET");
-			conn.setRequestProperty("Accept", API_ROOT_MEDIA_TYPE + "; charset=" + Constants.ENCODING);
-			configuration.getServerConfiguration().configureAuthentication(conn);
-			conn.setConnectTimeout(CONNECTION_TIMEOUT);
-			conn.setDoInput(true);
-
-			if (conn.getResponseCode() == 401) {
-				LOGGER.error("Authentication to Probe Dock failed with API key {}."
-						+ " Make sure the API key identifier and shared secret in your ROX configuration file are correct.",
-						configuration.getServerConfiguration().getApiToken());
-				return null;
-			}
-
-			try {
-				return new URL(parsePayloadResourceLinkHref(new InputStreamReader(conn.getInputStream(), Charset.forName(Constants.ENCODING).newDecoder())));
-			} catch (MalformedURLException mue) {
-				LOGGER.error("The " + API_ROOT_TEST_PAYLOAD_LINK + " link returned by the Probe Dock API is not a valid URL", mue);
-				return null;
-			}
-		} catch (IOException ioe) {
-			LOGGER.error("Could not read the Probe Dock API response", ioe);
-			return null;
-		}
-	}
-
-	private String parsePayloadResourceLinkHref(Reader in) throws IOException {
-
-		final JsonNode apiRoot = new ObjectMapper().readTree(in);
-
-		final JsonNode link = apiRoot.path("_links").path(API_ROOT_TEST_PAYLOAD_LINK).path("href");
-		if (link.isMissingNode()) {
-			throw new IllegalArgumentException("Expected HAL+JSON API root to have a " + API_ROOT_TEST_PAYLOAD_LINK + " link");
-		}
-
-		return link.textValue();
+	private URL getTestRunUrl() throws MalformedURLException {
+		return new URL(configuration.getServerConfiguration().getApiUrl() + "/publish");
 	}
 
 	/**
-	 * Internal method to send the payload to Probe Dock agnostic to the payload optimization
+	 * Internal method to send the test run to Probe Dock agnostic to the payload optimization
 	 *
-	 * @param payload The payload to send to Probe Dock
-	 * @param optimized Define if the payload is optimized or not
-	 * @return True if the payload was sent successfully
+	 * @param testRun The test run to send to Probe Dock
+	 * @param optimized Define if the test run is optimized or not
+	 * @return True if the test run was sent successfully
 	 */
-	private boolean sendPayload(URL payloadResourceUrl, ProbeTestRun payload, boolean optimized) {
+	private boolean sendTestRun(ProbeTestRun testRun, boolean optimized) {
 
 		HttpURLConnection conn = null;
 		final String payloadLogString = optimized ? "optimized payload" : "payload";
 
 		try {
-			conn = uploadPayload(payloadResourceUrl, payload);
+			conn = uploadTestRun(testRun);
  
 			if (conn.getResponseCode() == 202) {
 				LOGGER.info("The {} was successfully sent to Probe Dock.", payloadLogString);
 				return true;
 			} else {
-				LOGGER.error("Unable to send the {} to Rox. Return code: {}, content: {}", payloadLogString, conn.getResponseCode(), readInputStream(conn.getInputStream()));
+				LOGGER.error("Unable to send the {} to Probe Dock. Return code: {}, content: {}", payloadLogString, conn.getResponseCode(), readInputStream(conn.getInputStream()));
 			}
 		} catch (IOException ioe) {
 			if (!configuration.isPayloadPrint()) {
-				OutputStreamWriter baos = null;
-				try {
-					baos = new OutputStreamWriter(new ByteArrayOutputStream(), Charset.forName(Constants.ENCODING).newEncoder());
-
-					serializer.serializePayload(baos, payload, true);
+				try (OutputStreamWriter baos = new OutputStreamWriter(new ByteArrayOutputStream(), Charset.forName(Constants.ENCODING).newEncoder())) {
+					serializer.serializePayload(baos, testRun, true);
 
 					LOGGER.error("The {} in error: {}", payloadLogString, baos.toString());
-				} catch (IOException baosIoe) {
-				} finally {
-					try {
-						if (baos != null) {
-							baos.close();
-						}
-					} catch (IOException baosIoe) {
-					}
 				}
+				catch (IOException baosIoe) {}
 
 				if (conn != null) {
 					try {
 						if (conn.getErrorStream() != null) {
-							LOGGER.error("Unable to send the {} to ROX. Error: {}", payloadLogString, readInputStream(conn.getErrorStream()));
+							LOGGER.error("Unable to send the {} to Probe Dock. Error: {}", payloadLogString, readInputStream(conn.getErrorStream()));
 						} else {
-							LOGGER.error("Unable to send the " + payloadLogString + " to ROX. This is probably due to an unreachable network issue.", ioe);
+							LOGGER.error("Unable to send the " + payloadLogString + " to Probe Dock. This is probably due to an unreachable network issue.", ioe);
 						}
 					} catch (IOException errorIoe) {
-						LOGGER.error("Unable to send the {} to ROX for unknown reason.", payloadLogString);
+						LOGGER.error("Unable to send the {} to Probe Dock for unknown reason.", payloadLogString);
 					}
 				} else {
-					LOGGER.error("Unable to send the |{} to ROX. Error: {}", payloadLogString, ioe.getMessage());
+					LOGGER.error("Unable to send the {} to Probe Dock. Error: {}", payloadLogString, ioe.getMessage());
 				}
 			}
 		}
@@ -200,20 +130,20 @@ public class Connector {
 		return false;
 	}
 
-	private HttpURLConnection uploadPayload(final URL payloadResourceUrl, final ProbeTestRun payload) throws IOException {
-
-		final HttpURLConnection conn = openConnection(configuration.getServerConfiguration(), payloadResourceUrl);
+	private HttpURLConnection uploadTestRun(final ProbeTestRun testRun) throws IOException {
+		final HttpURLConnection conn = openConnection(configuration.getServerConfiguration(), getTestRunUrl());
 
 		conn.setRequestMethod("POST");
-		conn.setRequestProperty("Content-Type", API_TEST_PAYLOAD_MEDIA_TYPE + "; charset=" + Constants.ENCODING);
-		configuration.getServerConfiguration().configureAuthentication(conn);
+		conn.setRequestProperty("Content-Type", CONTENT_TYPE + "; charset=" + Constants.ENCODING);
+		conn.setRequestProperty("Authorization", "Bearer " + configuration.getServerConfiguration().getApiToken());
+
+		conn.setConnectTimeout(CONNECTION_TIMEOUT);
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 
 		// Create an output stream writer in specific encoding
-		final OutputStreamWriter osw =
-				new OutputStreamWriter(conn.getOutputStream(), Charset.forName(Constants.ENCODING).newEncoder());
-		serializer.serializePayload(osw, payload, false);
+		final OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream(), Charset.forName(Constants.ENCODING).newEncoder());
+		serializer.serializePayload(osw, testRun, false);
 
 		return conn;
 	}

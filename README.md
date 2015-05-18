@@ -30,5 +30,5 @@ Please add a [changelog](CHANGELOG.md) entry with your name for new features and
 
 ## License
 
-Probe Dock RSpec is licensed under the [MIT License](http://opensource.org/licenses/MIT).
+Probe Dock Java is licensed under the [MIT License](http://opensource.org/licenses/MIT).
 See [LICENSE.txt](LICENSE.txt) for the full license.
