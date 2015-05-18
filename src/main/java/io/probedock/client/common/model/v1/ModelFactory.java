@@ -123,4 +123,14 @@ public class ModelFactory {
 		
 		return testResult;
 	}
+
+	/**
+	 * Create a test report
+	 *
+	 * @param uid The UID to set to the test report
+	 * @return The test report created
+	 */
+	public static TestReport createTestReport(String uid) {
+		return new TestReport(uid);
+	}
 }

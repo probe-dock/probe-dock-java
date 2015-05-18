@@ -5,10 +5,15 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Configuration for ProbeDock clients. Define general configuration
@@ -21,6 +26,8 @@ import java.util.Set;
  */
 public class Configuration {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+
+	private static final Pattern BOOLEAN_PATTERN = Pattern.compile("\\A(1|y|yes|t|true)\\Z", Pattern.CASE_INSENSITIVE);
 	
 	/**
 	 * Default home directory
@@ -39,15 +46,17 @@ public class Configuration {
 	private static final String CLASSPATH_CONFIG = "config.yml";
 	
 	/**
-	 * The path to the UID directory into the home directory
+	 * The UID file name
 	 */
-	private static final String UID_DIRECTORY = "uid";
+	private static final String UID_FILE_NAME = "uid";
 	
 	/**
 	 * Root node name of the tree configuration
 	 */
 	protected static final String P_ROOT_NODE_NAME = "probe-dock";
-	
+
+	private static final String ENV_PREFIX = "PROBE_DOCK_";
+
 	/**
 	 * Parameter names
 	 */
@@ -70,7 +79,6 @@ public class Configuration {
 	private static final String P_PROJECT_API_ID				= P_ROOT_NODE_NAME + ".project.apiId";
 	private static final String P_PROJECT_VERSION				= P_ROOT_NODE_NAME + ".project.version";
 	private static final String P_PROJECT_CATEGORY				= P_ROOT_NODE_NAME + ".project.category";
-//	private static final String P_PROJECT_GROUP					= P_ROOT_NODE_NAME + ".project.group";
 	private static final String P_PROJECT_TAGS					= P_ROOT_NODE_NAME + ".project.tags";
 	private static final String P_PROJECT_TICKETS				= P_ROOT_NODE_NAME + ".project.tickets";
 	private static final String P_PROJECT_GENERATORSEED			= P_ROOT_NODE_NAME + ".project.seed";
@@ -95,11 +103,6 @@ public class Configuration {
 	 */
 	private Set<String> tags;
 	private Set<String> tickets;
-	
-	/**
-	 * The path to uid directory
-	 */
-	private File uidDirectory;
 	
 	private boolean disabled = false;
 	
@@ -154,15 +157,6 @@ public class Configuration {
 			disabled = true;
 			LOGGER.warn("The selected server ({}) in the Probe Dock configuration file is invalid", server.getName());
 		}
-
-		// Ensure there is the base path for UID directory
-		uidDirectory = new File(getWorkspace(), UID_DIRECTORY);
-		if (uidDirectory.exists() && uidDirectory.isFile()) {
-			throw new IllegalArgumentException("The UID file in the Probe Dock home directory is not a directory");
-		}
-		else if (!uidDirectory.exists()) {
-			uidDirectory.mkdir();
-		}
 	}
 	
 	/**
@@ -204,7 +198,7 @@ public class Configuration {
 	 * @return The home directory where Probe Dock client working files are stored
 	 */
 	public final String getWorkspace() {
-		return config.getString(P_WORKSPACE, DEFAULT_HOMEDIR).replace("~",System.getProperty("user.home"));
+		return getEnvironmentString("WORKSPACE", config.getString(P_WORKSPACE, DEFAULT_HOMEDIR)).replace("~",System.getProperty("user.home"));
 	}
 	
 	/**
@@ -219,7 +213,7 @@ public class Configuration {
 	}
 
 	private ServerConfiguration getInternalServerConfiguration() {
-		return serverList.get(config.getString(P_SERVER));
+		return serverList.get(getEnvironmentString("SERVER", config.getString(P_SERVER)));
 	}
 	
 	private String getServerListDescription() {
@@ -274,17 +268,6 @@ public class Configuration {
 		return getMandatory(P_PROJECT_VERSION);
 	}
 
-//	/**
-//	 * @return The group (allow grouping multiple test runs in one group)
-//	 */
-//	public String getGroup() {
-//		if (config.containsKey(P_PROJECT_GROUP)) {
-//			return config.getString(P_PROJECT_GROUP);
-//		}
-//
-//		return config.getString(P_GROUP);
-//	}
-
 	/**
 	 * @return The seed generator used in random generators
 	 */
@@ -301,14 +284,14 @@ public class Configuration {
 	 */
 	public boolean isPayloadCache() {
 		// TODO: Refactor the caching mechanism
-		return Boolean.FALSE; // config.getBoolean(P_PAYLAOD_CACHE, Boolean.TRUE);
+		return Boolean.FALSE; // getEnvironmentBoolean("CACHE_PAYLOAD", config.getBoolean(P_PAYLAOD_CACHE, Boolean.TRUE));
 	}
 	
 	/**
 	 * @return By default, no print will be done
 	 */
 	public boolean isPayloadPrint() {
-		return config.getBoolean(P_PAYLOAD_PRINT, Boolean.FALSE);
+		return getEnvironmentBoolean("PRINT_PAYLOAD", config.getBoolean(P_PAYLOAD_PRINT, Boolean.FALSE));
 	}
 	
 	/**
@@ -384,210 +367,71 @@ public class Configuration {
 	 * @return Define if the results must be stored or not locally
 	 */
 	public boolean isSave() {
-		return config.getBoolean(P_PAYLOAD_SAVE, Boolean.FALSE);
+		return getEnvironmentBoolean("SAVE_PAYLOAD", config.getBoolean(P_PAYLOAD_SAVE, Boolean.FALSE));
 	}
 
 	/**
 	 * @return Define if the test results must be send to Probe Dock.
 	 */
 	public boolean isPublish() {
-		return config.getBoolean(P_PUBLISH, Boolean.TRUE);
+		return getEnvironmentBoolean("PUBLISH", config.getBoolean(P_PUBLISH, Boolean.TRUE));
 	}
-	
-//	/**
-//	 * Shortcut method to {@link Configuration#getUid(java.lang.String, java.lang.String, java.lang.String, boolean) }
-//	 *
-//	 * @param category The category
-//	 * @param projectName The project name
-//	 * @param projectVersion The project version
-//	 * @return The UID generated
-//	 */
-//	public String getUid(String category, String projectName, String projectVersion) {
-//		return getUid(category, projectName, projectVersion, false);
-//	}
-//
-//	/**
-//	 * Generate a UID or retrieve the latest if it is valid depending the context given
-//	 * by the category, project name and project version
-//	 *
-//	 * @param category The category
-//	 * @param projectName The project name
-//	 * @param projectVersion The project version
-//	 * @param force Force the generation of a new UID
-//	 * @return The valid UID
-//	 */
-//	public String getUid(String category, String projectName, String projectVersion, boolean force) {
-//		String uid = null;
-//
-//		if (!force) {
-//			uid = readUid(new File(uidDirectory, "latest"));
-//		}
-//
-//		// Check if the UID was already used for the Probe Dock client and project/version
-//		if (uid != null && uidAlreadyUsed(category, projectName, uid)) {
-//			uid = null;
-//		}
-//
-//		// Generate UID and store it
-//		if (uid == null) {
-//			uid = generateUid();
-//			writeUid(new File(uidDirectory, "latest"), uid);
-//		}
-//
-//		writeUid(getUidFile(category, projectName, projectVersion), uid);
-//
-//		return uid;
-//	}
-//
-//	/**
-//	 * @return The last UID generated, null if none is available
-//	 */
-//	public String retrieveLastUid() {
-//		return readUid(new File(uidDirectory, "latest"));
-//	}
-//
-//	/**
-//	 * @return Generate a UID
-//	 */
-//	private String generateUid() {
-//		return UUID.randomUUID().toString();
-//	}
-//
-//	/**
-//	 * Read a UID file
-//	 *
-//	 * @param uidFile The UID file to read
-//	 * @return The UID read
-//	 */
-//	private String readUid(File uidFile) {
-//		String uid = null;
-//
-//		// Try to read the shared UID
-//		BufferedReader br = null;
-//		try {
-//			br = new BufferedReader(new FileReader(uidFile));
-//
-//			String line;
-//			while ((line = br.readLine()) != null) {
-//				uid = line;
-//			}
-//		}
-//		catch (IOException ioe) {}
-//		finally { if (br != null) { try { br.close(); } catch (IOException ioe) {} } }
-//
-//		return uid;
-//	}
-//
-//	/**
-//	 * Write a UID file
-//	 * @param uidFile The UID file to write
-//	 * @param uid The UID to write to the file
-//	 */
-//	private void writeUid(File uidFile, String uid) {
-//		BufferedWriter bw = null;
-//		try {
-//			bw = new BufferedWriter(new FileWriter(uidFile));
-//			bw.write(uid);
-//		}
-//		catch (IOException ioe) {}
-//		finally { if (bw != null) { try { bw.close(); } catch (IOException ioe) {} } }
-//	}
-//
-//	/**
-//	 * Check if a UID was already used in any context
-//	 *
-//	 * @param category The category to check
-//	 * @param projectName The project name to check
-//	 * @param uid The UID to validate
-//	 * @return True if the UID is present for at least one version of a project in a category, false otherwise
-//	 */
-//	private boolean uidAlreadyUsed(String category, String projectName, String uid) {
-//		if (uid == null) {
-//			return false;
-//		}
-//
-//		else {
-//			for (File versionDirectory : getUidFilesForProject(category, projectName)) {
-//				String uidRead = readUid(new File(versionDirectory, "latest"));
-//
-//				if (uidRead != null && !uidRead.isEmpty()) {
-//					if (uidRead.equals(uid)) {
-//						return true;
-//					}
-//				}
-//			}
-//
-//			return false;
-//		}
-//	}
-//
-//	/**
-//	 * Retrieve the list of the version directories for the project
-//	 *
-//	 * @param category The category
-//	 * @param projectName The project name
-//	 * @return The list of version directories or empty list if none are present
-//	 */
-//	private List<File> getUidFilesForProject(String category, String projectName) {
-//		// Check that the category directory exists
-//		File categoryDirectory = new File(uidDirectory, category);
-//		if (!categoryDirectory.exists() || (categoryDirectory.exists() && categoryDirectory.isFile())) {
-//			return new ArrayList<>();
-//		}
-//
-//		// Check that the project directory exists
-//		File projectDirectory = new File(categoryDirectory, projectName);
-//		if (!projectDirectory.exists() || (projectDirectory.exists() && projectDirectory.isFile())) {
-//			return new ArrayList<>();
-//		}
-//
-//		// Get all the version directories
-//		List<File> versionDirectories = new ArrayList<>();
-//		for (File electableDirectory : projectDirectory.listFiles()) {
-//			if (electableDirectory.isDirectory()) {
-//				versionDirectories.add(electableDirectory);
-//			}
-//		}
-//
-//		return versionDirectories;
-//	}
-//
-//	/**
-//	 * Get the UID file regarding the category, project name and project version
-//	 *
-//	 * @param category The category
-//	 * @param projectName The project name
-//	 * @param projectVersion The project version
-//	 * @return The UID file
-//	 */
-//	private File getUidFile(String category, String projectName, String projectVersion) {
-//		// Check that the category directory exists
-//		File categoryDirectory = new File(uidDirectory, category);
-//		if (categoryDirectory.exists() && categoryDirectory.isFile()) {
-//			throw new IllegalArgumentException("The category file for the UID storage is not a directory");
-//		}
-//		else if (!categoryDirectory.exists()) {
-//			categoryDirectory.mkdir();
-//		}
-//
-//		// Check that the project directory exists
-//		File projectDirectory = new File(categoryDirectory, projectName);
-//		if (projectDirectory.exists() && projectDirectory.isFile()) {
-//			throw new IllegalArgumentException("The project file for the UID store is not a directory");
-//		}
-//		else if (!projectDirectory.exists()) {
-//			projectDirectory.mkdir();
-//		}
-//
-//		// Check that the version directory exists
-//		File versionDirectory = new File(projectDirectory, projectVersion);
-//		if (versionDirectory.exists() && versionDirectory.isFile()) {
-//			throw new IllegalArgumentException("The version file for the UID store is not a directory");
-//		}
-//		else if (!versionDirectory.exists()) {
-//			versionDirectory.mkdir();
-//		}
-//
-//		return new File(versionDirectory, "latest");
-//	}
+
+	/**
+	 * Retrieve boolean value for the environment variable name
+	 *
+	 * @param name The name of the variable without prefix
+	 * @param defaultValue The default value if not found
+	 * @return The value found, or the default if not found
+	 */
+	private boolean getEnvironmentBoolean(String name, boolean defaultValue) {
+		String value = getEnvironmentString(name, null);
+
+		if (value == null) {
+			return defaultValue;
+		}
+		else {
+			return BOOLEAN_PATTERN.matcher(value).matches();
+		}
+	}
+
+	/**
+	 * Retrieve string value for the environment variable name
+	 *
+	 * @param name The name of the variable without prefix
+	 * @param defaultValue The default value if not found
+	 * @return The value found, or the default if not found
+	 */
+	private String getEnvironmentString(String name, String defaultValue) {
+		return System.getenv(ENV_PREFIX + name) != null ? System.getenv(ENV_PREFIX + name) : defaultValue;
+	}
+
+	/**
+	 * @return The current UID, null if none is available
+	 */
+	public String getCurrentUid() {
+		return getEnvironmentString("TEST_REPORT_UID", readUid(new File(UID_FILE_NAME)));
+	}
+
+	/**
+	 * Read a UID file
+	 *
+	 * @param uidFile The UID file to read
+	 * @return The UID read
+	 */
+	private String readUid(File uidFile) {
+		String uid = null;
+
+		// Try to read the shared UID
+		try (BufferedReader br = new BufferedReader(new FileReader(uidFile))){
+			String line;
+
+			while ((line = br.readLine()) != null) {
+				uid = line;
+			}
+		}
+		catch (IOException ioe) {}
+
+		return uid;
+	}
 }

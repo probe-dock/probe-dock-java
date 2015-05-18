@@ -12,6 +12,12 @@ public class TestReport implements ProbeTestReport {
     @JsonProperty("uid")
     private String uid;
 
+    public TestReport() {}
+
+    public TestReport(String uid) {
+        this.uid = uid;
+    }
+
     @Override
     public String getUid() {
         return uid;
