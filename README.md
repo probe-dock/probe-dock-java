@@ -1,4 +1,4 @@
-# Probe Dock RSpec
+# Probe Dock Java
 
 **Java base client probe for [Probe Dock](https://github.com/probe-dock/probe-dock).**
 
