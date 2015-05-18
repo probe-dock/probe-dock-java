@@ -15,7 +15,7 @@ In your pom file:
 ```xml
 <dependency>
   <groupId>io.probedock.client</groupId>
-  <artifactId>probe-dock-client-java</artifactId>
+  <artifactId>probe-dock-java</artifactId>
   <version>0.1.0</version>
 </dependenc>
 ```
