@@ -6,14 +6,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.probedock.client</groupId>
-    <artifactId>probe-dock-java</artifactId>
+    <artifactId>probedock-java</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <name>Probe Dock Client Java</name>
     <description>Base code to write Probe Dock clients in Java</description>
 
-    <url>https://github.com/probe-dock/probe-dock-java</url>
+    <url>https://github.com/probedock/probedock-java</url>
 
     <licenses>
         <license>
@@ -25,20 +25,20 @@
     <developers>
         <developer>
             <name>Laurent Prevost</name>
-            <email>laurent.prevost@probe-dock.io</email>
-            <organization>https://github.com/probe-dock</organization>
+            <email>laurent.prevost@probedock.io</email>
+            <organization>https://github.com/probedock</organization>
         </developer>
         <developer>
             <name>Simon Oulevay</name>
-            <email>simon.oulevay@probe-dock.io</email>
-            <organization>https://github.com/probe-dock</organization>
+            <email>simon.oulevay@probedock.io</email>
+            <organization>https://github.com/probedock</organization>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:probe-dock/probe-dock-java.git</connection>
-        <developerConnection>scm:git:git@github.com:probe-dock/probe-dock-java.git</developerConnection>
-        <url>git@github.com:probe-dock/probe-dock-java.git</url>
+        <connection>scm:git:git@github.com:probedock/probedock-java.git</connection>
+        <developerConnection>scm:git:git@github.com:probedock/probedock-java.git</developerConnection>
+        <url>git@github.com:probedock/probedock-java.git</url>
     </scm>
 
     <properties>
@@ -64,7 +64,7 @@
                 <version>1.6.5</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>ossrh</serverId>
+                    <serverId>ossrhProbeDock</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>

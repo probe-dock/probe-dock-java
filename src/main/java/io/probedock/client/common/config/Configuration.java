@@ -32,18 +32,18 @@ public class Configuration {
 	/**
 	 * Default home directory
 	 */
-	private static final String DEFAULT_HOMEDIR = System.getProperty("user.home") + "/.probe-dock";
+	private static final String DEFAULT_HOMEDIR = System.getProperty("user.home") + "/.probedock";
 	private static final String DEFAULT_CACHEDIR = DEFAULT_HOMEDIR + "/cache";
 	
 	/**
 	 * Base configuration that should be present in the home directory
 	 */
-	private static final String BASE_CONFIG_PATH = ".probe-dock/config.yml";
+	private static final String BASE_CONFIG_PATH = ".probedock/config.yml";
 	
 	/**
 	 * Configuration placed in the classpath
 	 */
-	private static final String CLASSPATH_CONFIG = "probe-dock.yml";
+	private static final String CLASSPATH_CONFIG = "probedock.yml";
 	
 	/**
 	 * The UID file name
@@ -53,7 +53,7 @@ public class Configuration {
 	/**
 	 * Root node name of the tree configuration
 	 */
-	protected static final String P_ROOT_NODE_NAME = "probe-dock";
+	protected static final String P_ROOT_NODE_NAME = "probedock";
 
 	private static final String ENV_PREFIX = "PROBE_DOCK_";
 
