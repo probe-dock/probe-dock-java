@@ -17,7 +17,7 @@ In your pom file:
   <groupId>io.probedock.client</groupId>
   <artifactId>probe-dock-java</artifactId>
   <version>0.1.0</version>
-</dependenc>
+</dependency>
 ```
 ## Contributing
 
