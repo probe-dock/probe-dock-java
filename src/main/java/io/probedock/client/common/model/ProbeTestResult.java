@@ -32,7 +32,7 @@ public interface ProbeTestResult {
 	/**
 	 * @return If the test is active
 	 */
-	boolean isActive();
+	Boolean isActive();
 
 	/**
 	 * @return The message of the test result

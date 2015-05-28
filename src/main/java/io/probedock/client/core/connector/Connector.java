@@ -122,7 +122,7 @@ public class Connector {
 						LOGGER.error("Unable to send the {} to Probe Dock for unknown reason.", payloadLogString);
 					}
 				} else {
-					LOGGER.error("Unable to send the {} to Probe Dock. Error: {}", payloadLogString, ioe.getMessage());
+					LOGGER.error("Unable to send the " + payloadLogString + " to Probe Dock.", ioe);
 				}
 			}
 		}

@@ -119,7 +119,7 @@ public class TestResult implements ProbeTestResult {
 	}
 
 	@Override
-	public boolean isActive() {
+	public Boolean isActive() {
 		return active;
 	}
 
@@ -232,7 +232,7 @@ public class TestResult implements ProbeTestResult {
 				"Duration: " + duration + ", " +
 				"Message: " + message  + ", " +
 				"Category: " + category + ", " +
-				"Status: " + active + ", " +
+				"Active: " + active + ", " +
 				"Tags: [" + sbTags.toString().replaceAll(", $", "]") + "], " +
 				"Tickets: [" + sbTickets.toString().replaceAll(", $", "]") + "], " +
 				"Data: [" + sbData.toString().replaceAll(", $", "") + "]" + 
