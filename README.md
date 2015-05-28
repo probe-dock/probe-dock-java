@@ -1,8 +1,8 @@
 # Probe Dock Java
 
-**Java base client probe for [Probe Dock](https://github.com/probe-dock/probe-dock).**
+**Java base client probe for [Probe Dock](https://github.com/probedock/probedock).**
 
-[![License](https://img.shields.io/github/license/probe-dock/probe-dock-java.svg)](LICENSE.txt)
+[![License](https://img.shields.io/github/license/probedock/probedock-java.svg)](LICENSE.txt)
 
 ## Requirements
 
@@ -15,7 +15,7 @@ In your pom file:
 ```xml
 <dependency>
   <groupId>io.probedock.client</groupId>
-  <artifactId>probe-dock-java</artifactId>
+  <artifactId>probedock-java</artifactId>
   <version>0.1.0</version>
 </dependency>
 ```
