@@ -23,7 +23,7 @@ public class TestResult implements ProbeTestResult {
 	private boolean passed;
 
 	@JsonProperty("v")
-	private boolean active;
+	private Boolean active;
 
 	@JsonProperty("d")
 	private long duration;
@@ -54,7 +54,7 @@ public class TestResult implements ProbeTestResult {
 		this.category = category;
 	}
 
-	public TestResult(String key, String name, Long duration, boolean passed, String message, String category, boolean active) {
+	public TestResult(String key, String name, Long duration, boolean passed, String message, String category, Boolean active) {
 		this.key = key;
 		this.name = name;
 		this.duration = duration;
@@ -123,7 +123,7 @@ public class TestResult implements ProbeTestResult {
 		return active;
 	}
 
-	public final void setActive(boolean active) {
+	public final void setActive(Boolean active) {
 		this.active = active;
 	}
 
