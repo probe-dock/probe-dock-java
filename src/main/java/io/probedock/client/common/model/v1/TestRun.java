@@ -27,6 +27,9 @@ public class TestRun implements ProbeTestRun {
 	@JsonProperty("duration")
 	private long duration;
 
+	@JsonProperty("uid")
+	private String uid;
+
 	@JsonProperty("results")
 	private List<TestResult> testResults = new ArrayList<>();
 
@@ -71,6 +74,15 @@ public class TestRun implements ProbeTestRun {
 	}
 
 	@Override
+	public String getUid() {
+		return uid;
+	}
+
+	public void setUid(String uid) {
+		this.uid = uid;
+	}
+
+	@Override
 	public List<TestResult> getTestResults() {
 		return testResults;
 	}
@@ -95,6 +107,7 @@ public class TestRun implements ProbeTestRun {
 
 		return
 			"TestRun: [" +
+				"UID:" + uid + ", " +
 				"ProjectId: " + projectId + ", " +
 				"Version: " + projectVersion + ", " +
 				"Duration: " + duration + ", " +

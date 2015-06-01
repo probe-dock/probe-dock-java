@@ -1,5 +1,6 @@
 package io.probedock.client.common.model.v1;
 
+import io.probedock.client.common.config.Configuration;
 import io.probedock.client.common.utils.Constants;
 
 import java.nio.charset.Charset;
@@ -40,6 +41,12 @@ public class ModelFactory {
 		testRun.setProjectId(projectApiId);
 		testRun.setProjectVersion(projectVersion);
 		testRun.setDuration(duration);
+
+		String uid = Configuration.getInstance().getCurrentUid();
+
+		if (uid != null && !uid.isEmpty()) {
+			testRun.setUid(uid);
+		}
 
 		testRun.getTestResults().addAll(testResults);
 

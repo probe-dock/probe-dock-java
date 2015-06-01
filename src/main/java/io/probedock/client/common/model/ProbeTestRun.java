@@ -21,6 +21,11 @@ public interface ProbeTestRun {
 	Optimizer getOptimizer();
 
 	/**
+	 * @return The report uid
+	 */
+	String getUid();
+
+	/**
 	 * @return The project version
 	 */
 	String getProjectVersion();
