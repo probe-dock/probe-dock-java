@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter;
 /**
  * Json Serializer implementation of {@link ProbeSerializer}
  *
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class JsonSerializer implements ProbeSerializer {
 

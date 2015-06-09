@@ -3,7 +3,7 @@ package io.probedock.client.common.model;
 /**
  * Probe Dock test report representation.
  *
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public interface ProbeTestReport {
 	/**

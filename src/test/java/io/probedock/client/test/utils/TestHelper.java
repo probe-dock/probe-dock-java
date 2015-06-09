@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 /**
  * Method utilities to test the Rox 
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class TestHelper {
 	/**

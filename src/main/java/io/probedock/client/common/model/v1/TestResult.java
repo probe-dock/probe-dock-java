@@ -9,13 +9,16 @@ import java.util.Map.Entry;
 /**
  * TestResult class to store the data related to tests
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class TestResult implements ProbeTestResult {
 
 	@JsonProperty("k")
 	private String key;
-	
+
+	@JsonProperty("f")
+	private String fingerprint;
+
 	@JsonProperty("n")
 	private String name;
 
@@ -33,20 +36,24 @@ public class TestResult implements ProbeTestResult {
 	
 	@JsonProperty("c")
 	private String category;
-	
-	@JsonProperty("g") // cached
+
+	@JsonProperty("o")
+	private Set<String> contributors;
+
+	@JsonProperty("g")
 	private Set<String> tags;
 	
-	@JsonProperty("t") // cached
+	@JsonProperty("t")
 	private Set<String> tickets;
 	
-	@JsonProperty("a") // cached
+	@JsonProperty("a")
 	private Map<String, String> data;
 	
 	public TestResult() {}
 	
-	public TestResult(String key, String name, Long duration, boolean passed, String message, String category) {
+	public TestResult(String key, String fingerprint, String name, Long duration, boolean passed, String message, String category) {
 		this.key = key;
+		this.fingerprint = fingerprint;
 		this.name = name;
 		this.duration = duration;
 		this.passed = passed;
@@ -54,8 +61,9 @@ public class TestResult implements ProbeTestResult {
 		this.category = category;
 	}
 
-	public TestResult(String key, String name, Long duration, boolean passed, String message, String category, Boolean active) {
+	public TestResult(String key, String fingerprint, String name, Long duration, boolean passed, String message, String category, Boolean active) {
 		this.key = key;
+		this.fingerprint = fingerprint;
 		this.name = name;
 		this.duration = duration;
 		this.passed = passed;
@@ -71,6 +79,15 @@ public class TestResult implements ProbeTestResult {
 
 	public void setKey(String key) {
 		this.key = key;
+	}
+
+	@Override
+	public String getFingerprint() {
+		return fingerprint;
+	}
+
+	public void setFingerprint(String fingerprint) {
+		this.fingerprint = fingerprint;
 	}
 
 	@Override
@@ -125,6 +142,33 @@ public class TestResult implements ProbeTestResult {
 
 	public final void setActive(Boolean active) {
 		this.active = active;
+	}
+
+	@Override
+	public Set<String> getContributors() {
+		return contributors;
+	}
+
+	public void addContributors(String[] contributors) {
+		addContributors(Arrays.asList(contributors));
+	}
+
+	public void addContributors(List<String> contributors) {
+		addContributors(new HashSet<>(contributors));
+	}
+
+	public void addContributors(Set<String> contributors) {
+		if (this.contributors == null) {
+			this.contributors = new HashSet<>();
+		}
+		this.contributors.addAll(contributors);
+	}
+
+	public void addContributor(String contributor) {
+		if (contributors == null) {
+			contributors = new HashSet<>();
+		}
+		contributors.add(contributor);
 	}
 
 	@Override
@@ -202,6 +246,13 @@ public class TestResult implements ProbeTestResult {
 	
 	@Override
 	public String toString() {
+		StringBuilder sbContributors = new StringBuilder();
+		if (contributors != null) {
+			for (String c : contributors) {
+				sbContributors.append("Contributor: [").append(c).append(", ");
+			}
+		}
+
 		StringBuilder sbTags = new StringBuilder();
 		if (tags != null) {
 			for (String g : tags) {
@@ -226,6 +277,7 @@ public class TestResult implements ProbeTestResult {
 		return 
 			"TestResult: [" +
 				"Key: " + key + ", " +
+				"Fingerprint: " + fingerprint + ", " +
 				"Name: " + name + ", " +
 				"Passed: " + passed + ", " +
 				"Active: " + active + ", " +
@@ -233,6 +285,7 @@ public class TestResult implements ProbeTestResult {
 				"Message: " + message  + ", " +
 				"Category: " + category + ", " +
 				"Active: " + active + ", " +
+				"Contributors: [" + sbContributors.toString().replaceAll(", $", "], ") +
 				"Tags: [" + sbTags.toString().replaceAll(", $", "]") + "], " +
 				"Tickets: [" + sbTickets.toString().replaceAll(", $", "]") + "], " +
 				"Data: [" + sbData.toString().replaceAll(", $", "") + "]" + 

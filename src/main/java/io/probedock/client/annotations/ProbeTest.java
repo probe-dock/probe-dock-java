@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * added to the test methods are used to send the test results to
  * ProbeDock.
  *
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -31,12 +31,17 @@ public @interface ProbeTest {
 	 * Category of test: Ex: unit, selenium or integration 
 	 */
 	String category() default "";
-	
+
+	/**
+	 * Contributors of the test: Ex: someone@somewhere.localdomain
+	 */
+	String[] contributors() default {};
+
 	/**
 	 * Tags for a test
 	 */
 	String[] tags() default {};
-	
+
 	/**
 	 * Tickets that refers to a ticketing system
 	 */

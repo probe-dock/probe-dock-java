@@ -1,15 +1,14 @@
-package io.probedock.client.core.utils;
+package io.probedock.client.common.utils;
 
-import io.probedock.client.common.utils.Inflector;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * TestResult for class {@link Inflector}
+ * Test for class {@link Inflector}
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class InflectorTest {
 	@Test

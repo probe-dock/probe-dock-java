@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * To apply some information across multiple tests
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -17,6 +17,11 @@ public @interface ProbeTestClass {
 	 * Category
 	 */
 	String category() default "";
+
+	/**
+	 * Contributors of the test: Ex: someone@somewhere.localdomain
+	 */
+	String[] contributors() default {};
 
 	/**
 	 * Tags to flag a test

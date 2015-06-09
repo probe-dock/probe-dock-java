@@ -10,25 +10,24 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
- * TestResult class for {@link CollectionHelper}
+ * Test class for {@link CollectionHelper}
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class CollectionHelperTest {
 	@Mock
-	private Logger LOGGER = LoggerFactory.getLogger(CollectionHelper.class);;
+	private Logger LOGGER = Logger.getLogger(CollectionHelper.class.getCanonicalName());
 	
 	@Before
 	public void setUp() {
@@ -43,9 +42,94 @@ public class CollectionHelperTest {
 	@After
 	public void tearDown() {
 		try {
-			TestHelper.setFinalStatic(CollectionHelper.class.getDeclaredField("LOGGER"), LoggerFactory.getLogger(CollectionHelper.class));
+			TestHelper.setFinalStatic(CollectionHelper.class.getDeclaredField("LOGGER"), Logger.getLogger(CollectionHelper.class.getCanonicalName()));
 		}
 		catch (Exception e) {}
+	}
+
+	@Test
+	public void whenNoParameterAreGivenToGetTheContributorsItShouldReturnEmptyContributors() {
+		assertTrue("The contributor must be empty", CollectionHelper.getContributors(null, null, null).isEmpty());
+	}
+
+	@Test
+	public void whenNoContributorsAreAvailableTheContributorsMustBeEmpty() {
+		assertTrue("The contributors must be empty", CollectionHelper.getContributors(new HashSet<String>(), null, null).isEmpty());
+	}
+
+	@Test
+	public void whenContributorsAreSpecifiedOnlyInTheConfigurationOnlyTheseMustBeReturned() {
+		Set<String> tags = CollectionHelper.getContributors(new HashSet<>(Arrays.asList(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"})), null, null);
+
+		assertEquals("The contributors should contains two contributors", 2, tags.size());
+		assertTrue("[contributor1] must be present in the contributors", tags.contains("email1@localhost.localdomain"));
+		assertTrue("[contributor2] must be present in the contributors", tags.contains("email2@localhost.localdomain"));
+	}
+
+	@Test
+	public void theContributorsShouldRespectCertainFormat() {
+		doAnswer(new Answer<Object>() {
+			@Override
+			public Object answer(InvocationOnMock invocation) {
+				assertTrue("The message should contains [The contributor '*ç%&/(' does not respect the email pattern]",
+					((String) invocation.getArguments()[0]).contains("The contributor '*ç%&/(' does not respect the email pattern"));
+				return null;
+			}
+		}).when(LOGGER).warning(any(String.class));
+
+		Set<String> contributors = CollectionHelper.getContributors(new HashSet<>(Arrays.asList(new String[]{"*ç%&/(", "email.valid@localhost.localdomain"})), null, null);
+
+		assertEquals("The contributors should contains one contributors", 1, contributors.size());
+		assertTrue("The contributors should contains [email.valid@localhost.localdomain]", contributors.contains("email.valid@localhost.localdomain"));
+	}
+
+	@Test
+	public void whenContributorsAreSpecifiedInTheConfigurationAndTheClassAnnotationTheCompiledTagsMustBeReturned() {
+		ProbeTestClass classAnnotation = mock(ProbeTestClass.class);
+
+		when(classAnnotation.contributors()).thenReturn(new String[]{"email3@localhost.localdomain", "email4@localhost.localdomain"});
+
+		Set<String> contributors = CollectionHelper.getContributors(new HashSet<>(Arrays.asList(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"})), null, classAnnotation);
+
+		assertEquals("The contributors should contains four contributors", 4, contributors.size());
+		assertTrue("[email1@localhost.localdomain] must be present in the contributors", contributors.contains("email1@localhost.localdomain"));
+		assertTrue("[email2@localhost.localdomain] must be present in the contributors", contributors.contains("email2@localhost.localdomain"));
+		assertTrue("[email3@localhost.localdomain] must be present in the contributors", contributors.contains("email3@localhost.localdomain"));
+		assertTrue("[email4@localhost.localdomain] must be present in the contributors", contributors.contains("email4@localhost.localdomain"));
+	}
+
+	@Test
+	public void whenContributorsAreSpecifiedInTheConfigurationAndAnnotationsTheCompiledTagsMustBeReturned() {
+		ProbeTestClass classAnnotation = mock(ProbeTestClass.class);
+		when(classAnnotation.contributors()).thenReturn(new String[]{"email3@localhost.localdomain", "email4@localhost.localdomain"});
+
+		ProbeTest methodAnnotation = mock(ProbeTest.class);
+		when(methodAnnotation.contributors()).thenReturn(new String[]{"email5@localhost.localdomain", "email6@localhost.localdomain"});
+
+		Set<String> contributors = CollectionHelper.getContributors(new HashSet<>(Arrays.asList(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"})), methodAnnotation, classAnnotation);
+
+		assertEquals("The contributors should contains six contributors", 6, contributors.size());
+		assertTrue("[email1@localhost.localdomain] must be present in the contributors", contributors.contains("email1@localhost.localdomain"));
+		assertTrue("[email2@localhost.localdomain] must be present in the contributors", contributors.contains("email2@localhost.localdomain"));
+		assertTrue("[email3@localhost.localdomain] must be present in the contributors", contributors.contains("email3@localhost.localdomain"));
+		assertTrue("[email4@localhost.localdomain] must be present in the contributors", contributors.contains("email4@localhost.localdomain"));
+		assertTrue("[email5@localhost.localdomain] must be present in the contributors", contributors.contains("email5@localhost.localdomain"));
+		assertTrue("[email6@localhost.localdomain] must be present in the contributors", contributors.contains("email6@localhost.localdomain"));
+	}
+
+	@Test
+	public void addingMultipleTimesTheSameContributorShouldOnlyKeepOne() {
+		ProbeTestClass classAnnotation = mock(ProbeTestClass.class);
+		when(classAnnotation.contributors()).thenReturn(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"});
+
+		ProbeTest methodAnnotation = mock(ProbeTest.class);
+		when(methodAnnotation.contributors()).thenReturn(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"});
+
+		Set<String> contributors = CollectionHelper.getContributors(new HashSet<>(Arrays.asList(new String[]{"email1@localhost.localdomain", "email2@localhost.localdomain"})), methodAnnotation, classAnnotation);
+
+		assertEquals("The contributors should contains six contributors", 2, contributors.size());
+		assertTrue("[email1@localhost.localdomain] must be present in the contributors", contributors.contains("email1@localhost.localdomain"));
+		assertTrue("[email2@localhost.localdomain] must be present in the contributors", contributors.contains("email2@localhost.localdomain"));
 	}
 	
 	@Test
@@ -60,7 +144,7 @@ public class CollectionHelperTest {
 	
 	@Test
 	public void whenTagsAreSpecifiedOnlyInTheConfigurationOnlyTheseMustBeReturned() {
-		Set<String> tags = CollectionHelper.getTags(new HashSet<String>(Arrays.asList(new String[]{"tag1", "tag2"})), null, null);
+		Set<String> tags = CollectionHelper.getTags(new HashSet<>(Arrays.asList(new String[]{"tag1", "tag2"})), null, null);
 		
 		assertEquals("The tags should contains two tags", 2, tags.size());
 		assertTrue("[tag1] must be present in the tags", tags.contains("tag1"));
@@ -76,9 +160,9 @@ public class CollectionHelperTest {
 					((String) invocation.getArguments()[0]).contains("The tag *ç%&/( does not respect the following pattern"));
 				return null;
 			}
-		}).when(LOGGER).warn(any(String.class));
+		}).when(LOGGER).warning(any(String.class));
 		
-		Set<String> tags = CollectionHelper.getTags(new HashSet<String>(Arrays.asList(new String[]{"*ç%&/(", "tagValid"})), null, null);
+		Set<String> tags = CollectionHelper.getTags(new HashSet<>(Arrays.asList(new String[]{"*ç%&/(", "tagValid"})), null, null);
 		
 		assertEquals("The tags should contains one tag", 1, tags.size());
 		assertTrue("The tags should contains [tagValid]", tags.contains("tagValid"));
@@ -90,7 +174,7 @@ public class CollectionHelperTest {
 		
 		when(classAnnotation.tags()).thenReturn(new String[]{"tag3", "tag4"});
 		
-		Set<String> tags = CollectionHelper.getTags(new HashSet<String>(Arrays.asList(new String[]{"tag1", "tag2"})), null, classAnnotation);
+		Set<String> tags = CollectionHelper.getTags(new HashSet<>(Arrays.asList(new String[]{"tag1", "tag2"})), null, classAnnotation);
 		
 		assertEquals("The tags should contains four tags", 4, tags.size());
 		assertTrue("[tag1] must be present in the tags", tags.contains("tag1"));
@@ -107,7 +191,7 @@ public class CollectionHelperTest {
 		ProbeTest methodAnnotation = mock(ProbeTest.class);
 		when(methodAnnotation.tags()).thenReturn(new String[]{"tag5", "tag6"});
 		
-		Set<String> tags = CollectionHelper.getTags(new HashSet<String>(Arrays.asList(new String[]{"tag1", "tag2"})), methodAnnotation, classAnnotation);
+		Set<String> tags = CollectionHelper.getTags(new HashSet<>(Arrays.asList(new String[]{"tag1", "tag2"})), methodAnnotation, classAnnotation);
 		
 		assertEquals("The tags should contains six tags", 6, tags.size());
 		assertTrue("[tag1] must be present in the tags", tags.contains("tag1"));
@@ -126,7 +210,7 @@ public class CollectionHelperTest {
 		ProbeTest methodAnnotation = mock(ProbeTest.class);
 		when(methodAnnotation.tags()).thenReturn(new String[]{"tag1", "tag2"});
 		
-		Set<String> tags = CollectionHelper.getTags(new HashSet<String>(Arrays.asList(new String[]{"tag1", "tag2"})), methodAnnotation, classAnnotation);
+		Set<String> tags = CollectionHelper.getTags(new HashSet<>(Arrays.asList(new String[]{"tag1", "tag2"})), methodAnnotation, classAnnotation);
 		
 		assertEquals("The tags should contains six tags", 2, tags.size());
 		assertTrue("[tag1] must be present in the tags", tags.contains("tag1"));
@@ -145,7 +229,7 @@ public class CollectionHelperTest {
 	
 	@Test
 	public void whenTicketsAreSpecifiedOnlyInTheConfigurationOnlyTheseMustBeReturned() {
-		Set<String> tickets = CollectionHelper.getTickets(new HashSet<String>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), null, null);
+		Set<String> tickets = CollectionHelper.getTickets(new HashSet<>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), null, null);
 		
 		assertEquals("The tickets should contains two tickets", 2, tickets.size());
 		assertTrue("[ticket-1] must be present in the tickets", tickets.contains("ticket-1"));
@@ -158,7 +242,7 @@ public class CollectionHelperTest {
 		
 		when(classAnnotation.tickets()).thenReturn(new String[]{"ticket-3", "ticket-4"});
 		
-		Set<String> tickets = CollectionHelper.getTickets(new HashSet<String>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), null, classAnnotation);
+		Set<String> tickets = CollectionHelper.getTickets(new HashSet<>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), null, classAnnotation);
 		
 		assertEquals("The tickets should contains four tickets", 4, tickets.size());
 		assertTrue("[ticket-1] must be present in the tickets", tickets.contains("ticket-1"));
@@ -175,7 +259,7 @@ public class CollectionHelperTest {
 		ProbeTest methodAnnotation = mock(ProbeTest.class);
 		when(methodAnnotation.tickets()).thenReturn(new String[]{"ticket-5", "ticket-6"});
 		
-		Set<String> tickets = CollectionHelper.getTickets(new HashSet<String>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), methodAnnotation, classAnnotation);
+		Set<String> tickets = CollectionHelper.getTickets(new HashSet<>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), methodAnnotation, classAnnotation);
 		
 		assertEquals("The tickets should contains six tickets", 6, tickets.size());
 		assertTrue("[ticket-1] must be present in the tickets", tickets.contains("ticket-1"));
@@ -194,7 +278,7 @@ public class CollectionHelperTest {
 		ProbeTest methodAnnotation = mock(ProbeTest.class);
 		when(methodAnnotation.tickets()).thenReturn(new String[]{"ticket-1", "ticket-2"});
 		
-		Set<String> tickets = CollectionHelper.getTickets(new HashSet<String>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), methodAnnotation, classAnnotation);
+		Set<String> tickets = CollectionHelper.getTickets(new HashSet<>(Arrays.asList(new String[]{"ticket-1", "ticket-2"})), methodAnnotation, classAnnotation);
 		
 		assertEquals("The tickets should contains six tickets", 2, tickets.size());
 		assertTrue("[ticket-1] must be present in the tickets", tickets.contains("ticket-1"));

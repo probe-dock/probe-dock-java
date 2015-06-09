@@ -2,49 +2,57 @@ package io.probedock.client.common.model.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.probedock.client.common.model.ProbeTestRun;
-import io.probedock.client.commons.optimize.Optimizer;
-import io.probedock.client.commons.optimize.v1.TestRunOptimizer;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A list of test testResults for a specific projectVersion of a project.
+ * A list of test testResults for a specific version of a project.
  *
- * @author Simon Oulevay <simon.oulevay@probe-dock.io>
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Simon Oulevay <simon.oulevay@probedock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class TestRun implements ProbeTestRun {
+	@JsonIgnore
 	private static final String API_VERSION = "v1";
 
 	@JsonProperty("projectId")
 	private String projectId;
 
 	@JsonProperty("version")
-	private String projectVersion;
+	private String version;
 
 	@JsonProperty("duration")
 	private long duration;
 
-	@JsonProperty("uid")
-	private String uid;
+	@JsonProperty("pipeline")
+	private String pipeline;
+
+	@JsonProperty("stage")
+	private String stage;
+
+	@JsonUnwrapped
+	private Context context;
+
+	@JsonProperty("probe")
+	private Probe probe;
 
 	@JsonProperty("results")
 	private List<TestResult> testResults = new ArrayList<>();
+
+	@JsonProperty("data")
+	private Map<String, String> data;
 
 	@JsonProperty("reports")
 	private List<TestReport> testReports = new ArrayList<>();
 
 	@Override
+	@JsonIgnore
 	public String getApiVersion() {
 		return API_VERSION;
-	}
-
-	@Override
-	@JsonIgnore
-	public Optimizer getOptimizer() {
-		return new TestRunOptimizer();
 	}
 
 	public String getProjectId() {
@@ -56,12 +64,12 @@ public class TestRun implements ProbeTestRun {
 	}
 
 	@Override
-	public String getProjectVersion() {
-		return projectVersion;
+	public String getVersion() {
+		return version;
 	}
 
-	public void setProjectVersion(String projectVersion) {
-		this.projectVersion = projectVersion;
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	@Override
@@ -74,17 +82,67 @@ public class TestRun implements ProbeTestRun {
 	}
 
 	@Override
-	public String getUid() {
-		return uid;
+	public String getPipeline() {
+		return pipeline;
 	}
 
-	public void setUid(String uid) {
-		this.uid = uid;
+	public void setPipeline(String pipeline) {
+		this.pipeline = pipeline;
+	}
+
+	@Override
+	public String getStage() {
+		return stage;
+	}
+
+	public void setStage(String stage) {
+		this.stage = stage;
+	}
+
+	@Override
+	public Context getContext() {
+		return context;
+	}
+
+	public void setContext(Context context) {
+		this.context = context;
+	}
+
+	@Override
+	public Probe getProbe() {
+		return probe;
+	}
+
+	public void setProbe(Probe probe) {
+		this.probe = probe;
+	}
+
+	@Override
+	public Map<String, String> getData() {
+		return data;
+	}
+
+	public void addData(Map<String, String> data) {
+		if (this.data == null) {
+			this.data = new HashMap<>();
+		}
+		this.data.putAll(data);
+	}
+
+	public void addData(String key, String value) {
+		if (this.data == null) {
+			this.data = new HashMap<>();
+		}
+		this.data.put(key, value);
 	}
 
 	@Override
 	public List<TestResult> getTestResults() {
 		return testResults;
+	}
+
+	public void addTestResults(List<TestResult> results) {
+		testResults.addAll(results);
 	}
 
 	@Override
@@ -95,22 +153,32 @@ public class TestRun implements ProbeTestRun {
 	@Override
 	public String toString() {
 		final StringBuilder sbTestResults = new StringBuilder();
-		final StringBuilder sbTestReports = new StringBuilder();
-
 		for (TestResult testResult : testResults) {
 			sbTestResults.append(testResult).append(", ");
 		}
 
+		final StringBuilder sbTestReports = new StringBuilder();
 		for (TestReport testReport : testReports) {
 			sbTestResults.append(testReport).append(", ");
 		}
 
+		final StringBuilder sbData = new StringBuilder();
+		if (data != null) {
+			for (Map.Entry<String, String> e : data.entrySet()) {
+				sbData.append("Data[Key: [").append(e.getKey()).append("], Value: [").append(e.getValue()).append("], ");
+			}
+		}
+
 		return
 			"TestRun: [" +
-				"UID:" + uid + ", " +
 				"ProjectId: " + projectId + ", " +
-				"Version: " + projectVersion + ", " +
+				"Version: " + version + ", " +
 				"Duration: " + duration + ", " +
+				"Pipeline: " + pipeline + ", " +
+				"Stage: " + stage + ", " +
+				"Context: " + context + ", " +
+				"Probe: " + probe + ", " +
+				"Data: [" + sbData.toString().replaceAll(", $", "") + "]" +
 				"Results: [" + sbTestResults.toString().replaceAll(", $", "") + "]" +
 				"Reports: [" + sbTestReports.toString().replaceAll(", $", "") + "]" +
 			"]";

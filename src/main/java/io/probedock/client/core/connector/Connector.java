@@ -4,24 +4,22 @@ import io.probedock.client.common.config.Configuration;
 import io.probedock.client.common.config.ServerConfiguration;
 import io.probedock.client.common.model.ProbeTestRun;
 import io.probedock.client.common.utils.Constants;
-import io.probedock.client.commons.optimize.OptimizerStore;
-import io.probedock.client.core.cache.CacheOptimizerStore;
 import io.probedock.client.core.serializer.ProbeSerializer;
 import io.probedock.client.core.serializer.json.JsonSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Connector to send the payloads to Probe Dock.
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class Connector {
-	private static final Logger LOGGER = LoggerFactory.getLogger(Connector.class);
+	private static final Logger LOGGER = Logger.getLogger(Connector.class.getCanonicalName());
 
 	private static final String CONTENT_TYPE = "application/vnd.probe-dock.payload.v1+json";
 
@@ -30,11 +28,6 @@ public class Connector {
 	private Configuration configuration;
 
 	private ProbeSerializer serializer;
-
-	/**
-	 * Optimization store
-	 */
-	private OptimizerStore store = null;
 
 	/**
 	 * Constructor
@@ -54,7 +47,7 @@ public class Connector {
 	 * @throws MalformedURLException
 	 */
 	public boolean send(ProbeTestRun testRun) throws MalformedURLException {
-		LOGGER.info("Connected to Probe Dock API at {}", configuration.getServerConfiguration().getApiUrl());
+		LOGGER.info("Connected to Probe Dock API at " + configuration.getServerConfiguration().getApiUrl());
 
 		// Print the payload to the outout stream
 		if (configuration.isPayloadPrint()) {
@@ -64,19 +57,13 @@ public class Connector {
 			catch (IOException ioe) {}
 		}
 
-		// Try to send the test run optimized
-		optimizeStart();
-		boolean result = sendTestRun(optimize(testRun), true);
-		optimizeStop(result);
-
-		// If the payload was not sent optimized, try to send it non-optimized
-		if (!result) {
-			result = sendTestRun(testRun, false);
-		}
-
-		return result;
+		return sendTestRun(testRun);
 	}
 
+	/**
+	 * @return The Probe Dock URL where to publish the test run
+	 * @throws MalformedURLException If the server base URL is malformed.
+	 */
 	private URL getTestRunUrl() throws MalformedURLException {
 		return new URL(configuration.getServerConfiguration().getApiUrl() + "/publish");
 	}
@@ -85,44 +72,42 @@ public class Connector {
 	 * Internal method to send the test run to Probe Dock agnostic to the payload optimization
 	 *
 	 * @param testRun The test run to send to Probe Dock
-	 * @param optimized Define if the test run is optimized or not
 	 * @return True if the test run was sent successfully
 	 */
-	private boolean sendTestRun(ProbeTestRun testRun, boolean optimized) {
+	private boolean sendTestRun(ProbeTestRun testRun) {
 
 		HttpURLConnection conn = null;
-		final String payloadLogString = optimized ? "optimized payload" : "payload";
 
 		try {
 			conn = uploadTestRun(testRun);
  
 			if (conn.getResponseCode() == 202) {
-				LOGGER.info("The {} was successfully sent to Probe Dock.", payloadLogString);
+				LOGGER.info("The test run was successfully sent to Probe Dock.");
 				return true;
 			} else {
-				LOGGER.error("Unable to send the {} to Probe Dock. Return code: {}, content: {}", payloadLogString, conn.getResponseCode(), readInputStream(conn.getInputStream()));
+				LOGGER.severe("Unable to send the test run to Probe Dock. Return code: " + conn.getResponseCode() + ", content: " + readInputStream(conn.getInputStream()));
 			}
 		} catch (IOException ioe) {
 			if (!configuration.isPayloadPrint()) {
 				try (OutputStreamWriter baos = new OutputStreamWriter(new ByteArrayOutputStream(), Charset.forName(Constants.ENCODING).newEncoder())) {
 					serializer.serializePayload(baos, testRun, true);
 
-					LOGGER.error("The {} in error: {}", payloadLogString, baos.toString());
+					LOGGER.severe("The test run in error: " + baos.toString());
 				}
 				catch (IOException baosIoe) {}
 
 				if (conn != null) {
 					try {
 						if (conn.getErrorStream() != null) {
-							LOGGER.error("Unable to send the {} to Probe Dock. Error: {}", payloadLogString, readInputStream(conn.getErrorStream()));
+							LOGGER.severe("Unable to send the test run to Probe Dock. Error: " + readInputStream(conn.getErrorStream()));
 						} else {
-							LOGGER.error("Unable to send the " + payloadLogString + " to Probe Dock. This is probably due to an unreachable network issue.", ioe);
+							LOGGER.log(Level.SEVERE, "Unable to send the test run to Probe Dock. This is probably due to an unreachable network issue.", ioe);
 						}
 					} catch (IOException errorIoe) {
-						LOGGER.error("Unable to send the {} to Probe Dock for unknown reason.", payloadLogString);
+						LOGGER.severe("Unable to send the test run to Probe Dock for unknown reason.");
 					}
 				} else {
-					LOGGER.error("Unable to send the " + payloadLogString + " to Probe Dock.", ioe);
+					LOGGER.log(Level.SEVERE, "Unable to send the test run to Probe Dock.", ioe);
 				}
 			}
 		}
@@ -161,56 +146,6 @@ public class Connector {
 		return builder.toString();
 	}
 
-	/**
-	 * Start the optimization
-	 */
-	private void optimizeStart() {
-		if (configuration.isPayloadCache()) {
-
-			if (configuration.getOptimizerStoreClass() == null) {
-				store = new CacheOptimizerStore();
-				store.start(configuration);
-				return;
-			}
-
-			try {
-				store = (OptimizerStore) Class.forName(configuration.getOptimizerStoreClass()).newInstance();
-				store.start(configuration);
-			} catch (ClassNotFoundException cnfe) {
-				LOGGER.warn("Unable to find the class {}. The payload will be sent without optimizations.", configuration.getOptimizerStoreClass());
-			} catch (InstantiationException ex) {
-				LOGGER.warn("Unable to instantiate the class {}. Concrete class required.", configuration.getOptimizerStoreClass());
-			} catch (IllegalAccessException ex) {
-				LOGGER.warn("Unable to instantiate the class {}. Empty constructor required.", configuration.getOptimizerStoreClass());
-			}
-		}
-	}
-
-	/**
-	 * Process the payload optimization
-	 *
-	 * @param payload The payload not optimized
-	 * @return The payload optimized
-	 */
-	private ProbeTestRun optimize(ProbeTestRun payload) {
-		if (store != null) {
-			return payload.getOptimizer().optimize(store, payload);
-		}
-
-		return payload;
-	}
-
-	/**
-	 * Stop the optimization
-	 *
-	 * @param persist Define if the cache must be persisted or not
-	 */
-	private void optimizeStop(boolean persist) {
-		if (store != null) {
-			store.stop(persist);
-		}
-	}
-	
 	/**
 	 * Open a connection regarding the configuration and the URL
 	 * 

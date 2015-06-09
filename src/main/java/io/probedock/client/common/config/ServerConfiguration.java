@@ -1,13 +1,13 @@
 package io.probedock.client.common.config;
 
-import io.probedock.client.common.utils.FootprintGenerator;
+import io.probedock.client.common.utils.FingerprintGenerator;
 
 import java.util.Map;
 
 /**
  * Probe Dock server configuration.
  *
- * @author Simon Oulevay <simon.oulevay@probe-dock.io>
+ * @author Simon Oulevay <simon.oulevay@probedock.io>
  */
 public class ServerConfiguration {
 
@@ -39,7 +39,7 @@ public class ServerConfiguration {
 	}
 
 	public String getBaseUrlFootprint() {
-		return FootprintGenerator.footprint(apiUrl);
+		return FingerprintGenerator.fingerprint(apiUrl);
 	}
 
 	public boolean isValid() {

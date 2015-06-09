@@ -6,9 +6,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * TestResult class for {@link ProbeTestClass}
+ * Test class for {@link ProbeTestClass}
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class ProbeTestClassTest {
 	private ProbeTestClass annotation;

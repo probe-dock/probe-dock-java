@@ -2,9 +2,6 @@ package io.probedock.client.common.config;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +9,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -21,10 +20,10 @@ import java.util.regex.Pattern;
  * The configuration is not thread safe but it is not so critical.
  * Performance issues should be there.
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class Configuration {
-	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+	private static final Logger LOGGER = Logger.getLogger(Configuration.class.getCanonicalName());
 
 	private static final Pattern BOOLEAN_PATTERN = Pattern.compile("\\A(1|y|yes|t|true)\\Z", Pattern.CASE_INSENSITIVE);
 	
@@ -32,8 +31,7 @@ public class Configuration {
 	 * Default home directory
 	 */
 	private static final String DEFAULT_HOMEDIR = System.getProperty("user.home") + "/.probedock";
-	private static final String DEFAULT_CACHEDIR = DEFAULT_HOMEDIR + "/cache";
-	
+
 	/**
 	 * Base configuration that should be present in the home directory
 	 */
@@ -64,15 +62,14 @@ public class Configuration {
 	private static final String P_TAGS 			= P_ROOT_NODE_NAME + ".tags";
 	private static final String P_TICKETS 		= P_ROOT_NODE_NAME + ".tickets";
 	private static final String P_CATEGORY 		= P_ROOT_NODE_NAME + ".category";
+	private static final String P_PIPELINE		= P_ROOT_NODE_NAME + ".pipeline";
+	private static final String P_STAGE			= P_ROOT_NODE_NAME + ".stage";
 	private static final String P_PUBLISH 		= P_ROOT_NODE_NAME + ".publish";
 	private static final String P_GENERATORSEED = P_ROOT_NODE_NAME + ".seed";
 
 	private static final String P_PAYLOAD_PRINT	= P_ROOT_NODE_NAME + ".payload.print";
-	private static final String P_PAYLAOD_CACHE	= P_ROOT_NODE_NAME + ".payload.cache";
 	private static final String P_PAYLOAD_SAVE	= P_ROOT_NODE_NAME + ".payload.save";
 
-	private static final String P_OPTIMIZER_CLASS 		= P_ROOT_NODE_NAME + ".java.optimizer.storeClass";
-	private static final String P_OPTIMIZER_CACHE_DIR	= P_ROOT_NODE_NAME + ".java.optimizer.cacheDir";
 	private static final String P_SERIALIZER_CLASS		= P_ROOT_NODE_NAME + ".java.serializerClass";
 
 	private static final String P_PROJECT_API_ID				= P_ROOT_NODE_NAME + ".project.apiId";
@@ -117,11 +114,11 @@ public class Configuration {
 		}
 		catch (ConfigurationException ce) {
 			
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Unable to load the project configuration.", ce);
+			if (LOGGER.getLevel() == Level.FINEST) {
+				LOGGER.log(Level.FINEST, "Unable to load the project configuration.", ce);
 			}
 			else {
-				LOGGER.warn("Unable to load the project configuration due to: {}", ce.getMessage());
+				LOGGER.warning("Unable to load the project configuration due to: " + ce.getMessage());
 			}
 		}
 
@@ -129,16 +126,16 @@ public class Configuration {
 			config.addConfiguration(new YamlConfigurationFile(BASE_CONFIG_PATH, P_ROOT_NODE_NAME, serverList));
 		}
 		catch (ConfigurationException ce) {
-			if (LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Unable to load the Probe Dock configuration.", ce);
+			if (LOGGER.getLevel() == Level.FINEST) {
+				LOGGER.log(Level.FINEST, "Unable to load the Probe Dock configuration.", ce);
 			}
 			else {
-				LOGGER.warn("Unable to load the Probe Dock configuration due to: {}", ce.getMessage());
+				LOGGER.warning("Unable to load the Probe Dock configuration due to: " + ce.getMessage());
 			}
 		}
 
 		if (!serverList.isEmpty()) {
-			LOGGER.debug(getServerListDescription());
+			LOGGER.fine(getServerListDescription());
 		}
 
 		final ServerConfiguration server = getInternalServerConfiguration();
@@ -146,15 +143,15 @@ public class Configuration {
 			disabled = true;
 		} else if (serverList.isEmpty()) {
 			disabled = true;
-			LOGGER.warn("No server is defined in the Probe Dock configuration files"
-					+ "; define servers under the \"servers\" property.");
+			LOGGER.warning("No server is defined in the Probe Dock configuration files"
+				+ "; define servers under the \"servers\" property.");
 		} else if (server == null) {
 			disabled = true;
-			LOGGER.warn("No known server is selected in the Probe Dock configuration files"
-					+ "; set the \"server\" property to the name of one of the configured servers.");
+			LOGGER.warning("No known server is selected in the Probe Dock configuration files"
+				+ "; set the \"server\" property to the name of one of the configured servers.");
 		} else if (!server.isValid()) {
 			disabled = true;
-			LOGGER.warn("The selected server ({}) in the Probe Dock configuration file is invalid", server.getName());
+			LOGGER.warning("The selected server (" + server.getName() + ") in the Probe Dock configuration file is invalid");
 		}
 	}
 	
@@ -268,6 +265,20 @@ public class Configuration {
 	}
 
 	/**
+	 * @return The pipeline name
+	 */
+	public String getPipeline() {
+		return config.getString(P_PIPELINE);
+	}
+
+	/**
+	 * @return The pipeline stage name
+	 */
+	public String getStage() {
+		return config.getString(P_STAGE);
+	}
+
+	/**
 	 * @return The seed generator used in random generators
 	 */
 	public Long getGeneratorSeed() {
@@ -279,34 +290,13 @@ public class Configuration {
 	}
 	
 	/**
-	 * @return By default, optimization will be done
-	 */
-	public boolean isPayloadCache() {
-		// TODO: Refactor the caching mechanism
-		return Boolean.FALSE; // getEnvironmentBoolean("CACHE_PAYLOAD", config.getBoolean(P_PAYLAOD_CACHE, Boolean.TRUE));
-	}
-	
-	/**
 	 * @return By default, no print will be done
 	 */
 	public boolean isPayloadPrint() {
 		return getEnvironmentBoolean("PRINT_PAYLOAD", config.getBoolean(P_PAYLOAD_PRINT, Boolean.FALSE));
 	}
 	
-	/**
-	 * @return The class name to use for the optimization process
-	 */
-	public String getOptimizerStoreClass() {
-		return config.getString(P_OPTIMIZER_CLASS);
-	}
-	
-	/**
-	 * @return The caching directory where to store cached data
-	 */
-	public String getOptimizerCacheDir() {
-		return config.getString(P_OPTIMIZER_CACHE_DIR, DEFAULT_CACHEDIR).replace("~", System.getProperty("user.home"));
-	}
-	
+
 	/**
 	 * @return Get tags from the configuration, if none, empty set is returned
 	 */

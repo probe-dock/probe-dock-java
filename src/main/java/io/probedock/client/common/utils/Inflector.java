@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
  * Inflector to compute human names from package, class and 
  * method names.
  * 
- * @author Laurent Prévost, laurent.prevost@lotaris.com
+ * @author Laurent Prévost <laurent.prevost@probedock.io>
  */
 public class Inflector {
 	/**

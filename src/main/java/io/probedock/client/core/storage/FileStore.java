@@ -6,22 +6,22 @@ import io.probedock.client.common.utils.Constants;
 import io.probedock.client.core.serializer.ProbeSerializer;
 import io.probedock.client.core.serializer.json.JsonSerializer;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * File store to keep the result between runs
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class FileStore {
-	private static final Logger LOGGER = LoggerFactory.getLogger(FileStore.class);
+	private static final Logger LOGGER = Logger.getLogger(FileStore.class.getCanonicalName());
 	
 	private Configuration configuration;
 	
@@ -36,7 +36,7 @@ public class FileStore {
 		this.configuration = configuration;
 		
 		if (configuration.getSerializer() == null) {
-			LOGGER.info("Default serializer {} will be used.", JsonSerializer.class.getName());
+			LOGGER.info("Default serializer " + JsonSerializer.class.getName() + " will be used.");
 			serializer = new JsonSerializer();
 		}
 		else {
@@ -44,7 +44,7 @@ public class FileStore {
 				serializer = (ProbeSerializer) getClass().getClassLoader().loadClass(configuration.getSerializer()).newInstance();
 			}
 			catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-				LOGGER.warn("Unable to create the serializer {}, default one will be used.", configuration.getSerializer(), e);
+				LOGGER.log(Level.WARNING, "Unable to create the serializer " + configuration.getSerializer() + ", default one will be used.", e);
 			}
 			finally {
 				serializer = new JsonSerializer();
@@ -127,7 +127,7 @@ public class FileStore {
 	 * @return The temp directory, new one if the directory does not exist
 	 */
 	private File getTmpDir(ProbeTestRun testRun) {
-		File tmpDir = new File(configuration.getWorkspace() + "/tmp/" + testRun.getProjectVersion());
+		File tmpDir = new File(configuration.getWorkspace() + "/tmp/" + testRun.getVersion());
 		
 		if (!tmpDir.exists()) {
 			tmpDir.mkdirs();

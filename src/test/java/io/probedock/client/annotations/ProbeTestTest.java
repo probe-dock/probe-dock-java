@@ -7,9 +7,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * TestResult class for {@link CollectionHelper}
+ * Test class for {@link CollectionHelper}
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class ProbeTestTest {
 	private ProbeTest annotation;

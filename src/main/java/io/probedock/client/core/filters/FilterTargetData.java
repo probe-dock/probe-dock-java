@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Data structure to apply the filtering
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class FilterTargetData {
 	private final String tags;
@@ -96,7 +96,7 @@ public class FilterTargetData {
 	/**
 	 * Match tag condition
 	 * 
-	 * @param lookupAny Filter text
+	 * @param lookupTag Filter text
 	 * @return True if match, false otherwise
 	 */
 	boolean tagMatch(String lookupTag) {
@@ -106,7 +106,7 @@ public class FilterTargetData {
 	/**
 	 * Match ticket condition
 	 * 
-	 * @param lookupAny Filter text
+	 * @param lookupTicket Filter text
 	 * @return True if match, false otherwise
 	 */
 	boolean ticketMatch(String lookupTicket) {

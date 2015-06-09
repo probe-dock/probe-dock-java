@@ -6,13 +6,18 @@ import java.util.Set;
 /**
  * Define what a test result should be
  * 
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public interface ProbeTestResult {
 	/**
 	 * @return The unique identifier of the test.
 	 */
 	String getKey();
+
+	/**
+	 * @return The fingerprint of the test (hash of package.class.method)
+	 */
+	String getFingerprint();
 
 	/**
 	 * @return The name of the test
@@ -48,7 +53,12 @@ public interface ProbeTestResult {
 	 * @return Set of tags
 	 */
 	Set<String> getTags();
-	
+
+	/**
+	 * @return Set of contributors
+	 */
+	Set<String> getContributors();
+
 	/**
 	 * @return Set of tickets
 	 */

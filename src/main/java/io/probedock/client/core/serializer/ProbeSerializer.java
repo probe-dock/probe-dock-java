@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter;
 /**
  * Serializer interface
  *
- * @author Laurent Prevost <laurent.prevost@probe-dock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public interface ProbeSerializer {
 
