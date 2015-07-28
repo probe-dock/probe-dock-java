@@ -2,6 +2,7 @@ package io.probedock.client.common.config;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -46,13 +47,17 @@ public class Configuration {
 	 * The UID file name
 	 */
 	private static final String UID_FILE_NAME = "uid";
-	
+
 	/**
 	 * Root node name of the tree configuration
 	 */
 	protected static final String P_ROOT_NODE_NAME = "probedock";
 
+	/**
+	 * Environment related
+	 */
 	private static final String ENV_PREFIX = "PROBE_DOCK_";
+	private static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
 
 	/**
 	 * Parameter names
@@ -399,7 +404,7 @@ public class Configuration {
 	 * @return The current UID, null if none is available
 	 */
 	public String getCurrentUid() {
-		return getEnvironmentString("TEST_REPORT_UID", readUid(new File(UID_FILE_NAME)));
+		return getEnvironmentString(ENV_TEST_REPORT_UID, readUid(new File(UID_FILE_NAME)));
 	}
 
 	/**
