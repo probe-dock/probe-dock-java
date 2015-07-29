@@ -19,6 +19,7 @@ public class FilterTargetData {
 	private final String name;
 	private final String technicalName;
 	private final String key;
+	private final String fingerprint;
 
 	public String getKey() {
 		return key;
@@ -26,34 +27,53 @@ public class FilterTargetData {
 
 	/**
 	 * Constructor
-	 * 
+	 *
+	 * @param fingerprint The fingerprint of the test
 	 * @param m Method
 	 * @param mAnnotation Method annotation
 	 * @param cAnnotation Class annotation
 	 */
-	public FilterTargetData(Method m, ProbeTest mAnnotation, ProbeTestClass cAnnotation) {
+	public FilterTargetData(String fingerprint, Method m, ProbeTest mAnnotation, ProbeTestClass cAnnotation) {
 		this.tags = mergeTags(mAnnotation, cAnnotation);
 		this.tickets = mergeTickets(mAnnotation, cAnnotation);
 		this.name = testName(m, mAnnotation);
-		this.technicalName = m.getDeclaringClass() + "." + m.getName();
+		this.technicalName = m.getDeclaringClass().getCanonicalName() + "." + m.getName();
 		this.key = mAnnotation != null ? mAnnotation.key() : "";
+		this.fingerprint = fingerprint;
+	}
+
+	/**
+	 * Constructor for cases where tags, tickets, key are not present (no annotations)
+	 *
+	 * @param fingerprint The fingerprint of the test
+	 * @param m The method
+	 */
+	public FilterTargetData(String fingerprint, Method m) {
+		this.tags = "[]";
+		this.tickets = "[]";
+		this.name = m.getName();
+		this.technicalName = m.getDeclaringClass().getCanonicalName() + "." + m.getName();
+		this.key = "";
+		this.fingerprint = fingerprint;
 	}
 
 	/**
 	 * Constructor
-	 * 
+	 *
+	 * @param fingerprint The fingerprint of the test
 	 * @param tags Tags
 	 * @param tickets Tickets
 	 * @param technicalName Technical name
 	 * @param name Name
 	 * @param key Key
 	 */
-	public FilterTargetData(String tags, String tickets, String technicalName, String name, String key) {
+	public FilterTargetData(String fingerprint, String tags, String tickets, String technicalName, String name, String key) {
 		this.tags = tags;
 		this.tickets = tickets;
 		this.name = name;
 		this.technicalName = technicalName;
 		this.key = key;
+		this.fingerprint = fingerprint;
 	}
 	
 	/**
@@ -62,7 +82,7 @@ public class FilterTargetData {
 	 * @param lookupAny Filter text
 	 * @return True if match, false otherwise
 	 */
-	public boolean anyMatch(String lookupAny) {
+	boolean anyMatch(String lookupAny) {
 		return
 			keyMatch(lookupAny) || nameMatch(lookupAny) || 
 			tagMatch(lookupAny) || ticketMatch(lookupAny);
@@ -74,13 +94,23 @@ public class FilterTargetData {
 	 * @param lookupKey Filter text
 	 * @return True if match, false otherwise
 	 */
-	public boolean keyMatch(String lookupKey) {
+	boolean keyMatch(String lookupKey) {
 		if (key.isEmpty()) {
 			return technicalName.contains(lookupKey);
 		}
 		else {
 			return key.contains(lookupKey);
 		}
+	}
+
+	/**
+	 * Match fingerprint condition
+	 *
+	 * @param fingerprint The fingerprint to match
+	 * @return True if match, false otherwise
+	 */
+	boolean fingerpringMatch(String fingerprint) {
+		return this.fingerprint.contains(fingerprint);
 	}
 
 	/**
@@ -111,6 +141,17 @@ public class FilterTargetData {
 	 */
 	boolean ticketMatch(String lookupTicket) {
 		return tickets.contains(lookupTicket);
+	}
+
+	@Override
+	public String toString() {
+		return
+			"key: " + key + ", " +
+			"name: " + name + ", " +
+			"technicalName: " + technicalName + ", " +
+			"fingerprint: " + fingerprint + ", " +
+			"tags: " + tags + ", " +
+			"tickets: " + tickets;
 	}
 
 	/**
@@ -169,5 +210,4 @@ public class FilterTargetData {
 		
 		return Arrays.toString(tickets.toArray(new String[tickets.size()]));
 	}
-	
 }
