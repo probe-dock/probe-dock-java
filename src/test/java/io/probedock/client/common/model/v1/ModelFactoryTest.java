@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,10 +49,10 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void fingerprintShouldBeBasedOnPackageClassAndMethodNames() {
-		final String result = ModelFactory.createFingerprint("package", "class", "method");
+	public void fingerprintShouldBeBasedOnPackageClassAndMethodNames() throws Exception {
+		final String result = ModelFactory.createFingerprint(this.getClass(), this.getClass().getDeclaredMethod("fingerprintShouldBeBasedOnPackageClassAndMethodNames"));
 
-		assertEquals("Fingerprints must be the same", "5c72161022fb8bde99c23bcef6bac287f153dfce", result);
+		assertEquals("Fingerprints must be the same", "2124ed3c55b62e67bb3d00b79324d6094d47ec34", result);
 	}
 
 	@Test

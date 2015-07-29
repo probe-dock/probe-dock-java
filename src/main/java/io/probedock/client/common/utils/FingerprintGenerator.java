@@ -1,5 +1,6 @@
 package io.probedock.client.common.utils;
 
+import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
@@ -30,17 +31,27 @@ public class FingerprintGenerator {
 	}
 
 	/**
-	 * Generate a fingerprint based on package, class and method name
+	 * Generate a fingerprint based on class and method
 	 *
-	 * @param packageName The package name
-	 * @param className The class name
+	 * @param cl The class
+	 * @param m The method
+	 * @return The fingerprint generated
+	 */
+	public static String fingerprint(Class cl, Method m) {
+		return fingerprint(cl, m.getName());
+	}
+
+	/**
+	 * Generate a fingerprint based on class and method name
+	 *
+	 * @param cl The class
 	 * @param methodName The method name
 	 * @return The fingerprint generated
 	 */
-	public static String fingerprint(String packageName, String className, String methodName) {
-		return fingerprint(packageName + "." + className + "." + methodName);
+	public static String fingerprint(Class cl, String methodName) {
+		return fingerprint(cl.getCanonicalName() + "." + methodName);
 	}
-	
+
 	/**
 	 * Convert a byte array to hexadecimal string
 	 * 
@@ -50,8 +61,8 @@ public class FingerprintGenerator {
 	private static String byteArrayToHexString(byte[] byteArray) {
 		StringBuilder result = new StringBuilder();
 		
-		for (int i=0; i < byteArray.length; i++) {
-			result.append(Integer.toString((byteArray[i] & 0xff) + 0x100, 16).substring(1));
+		for (byte b : byteArray) {
+			result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
 		}
 		
 		return result.toString();

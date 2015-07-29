@@ -6,6 +6,7 @@ import io.probedock.client.common.utils.Constants;
 import io.probedock.client.common.utils.FingerprintGenerator;
 import io.probedock.client.common.utils.MetaDataBuilder;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,13 @@ import java.util.Set;
 public class ModelFactory {
 	/**
 	 * Create fingerprint for java test method
+	 *
+	 * @param cl The test class
+	 * @param m The test method
 	 * @return The fingerprint generated
 	 */
-	public static String createFingerprint(String packageName, String className, String methodName) {
-		return FingerprintGenerator.fingerprint(packageName, className, methodName);
+	public static String createFingerprint(Class cl, Method m) {
+		return FingerprintGenerator.fingerprint(cl, m);
 	}
 
 	/**

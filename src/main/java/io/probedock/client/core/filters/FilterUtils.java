@@ -31,7 +31,7 @@ public class FilterUtils {
 			ProbeTest mAnnotation = m.getAnnotation(ProbeTest.class);
 			ProbeTestClass cAnnotation = m.getDeclaringClass().getAnnotation(ProbeTestClass.class);
 
-			String fingerprint = FingerprintGenerator.fingerprint(cl.getPackage().getName(), cl.getSimpleName(), m.getName());
+			String fingerprint = FingerprintGenerator.fingerprint(cl, m);
 
 			if (mAnnotation != null || cAnnotation != null) {
 				return isRunnable(new FilterTargetData(fingerprint, m, mAnnotation, cAnnotation), filters);
