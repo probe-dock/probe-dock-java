@@ -743,7 +743,9 @@ public class ModelFactoryTest {
 		assertNull(testResult.getContributors());
 		assertNull(testResult.getTags());
 		assertNull(testResult.getTickets());
-		assertNull(testResult.getData());
+		assertNotNull(testResult.getData());
+		assertEquals(1, testResult.getData().size());
+		assertNotNull(testResult.getData().get("fingerprint"));
 
 		testResult = ModelFactory.createTestResult(
 			"",
@@ -763,7 +765,9 @@ public class ModelFactoryTest {
 		assertTrue(testResult.getContributors().isEmpty());
 		assertTrue(testResult.getTags().isEmpty());
 		assertTrue(testResult.getTickets().isEmpty());
-		assertTrue(testResult.getData().isEmpty());
+		assertFalse(testResult.getData().isEmpty());
+		assertEquals(1, testResult.getData().size());
+		assertNotNull(testResult.getData().get("fingerprint"));
 	}
 
 

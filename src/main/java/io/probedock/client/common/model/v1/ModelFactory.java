@@ -238,6 +238,9 @@ public class ModelFactory {
 		if (data != null) {
 			testResult.addData(data);
 		}
+
+		// Add the fingerprint in the data to help the migration of the server data
+		testResult.addData("fingerprint", fingerprint);
 		
 		return testResult;
 	}
