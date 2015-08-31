@@ -9,7 +9,7 @@ import java.util.Map;
  * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public interface ProbeTestRun {
-	String PROBE_DOCK_REPORT_UID = "probedock.report.uid";
+	String PROBEDOCK_REPORT_UID = "probedock.report.uid";
 
 	/**
 	 * @return Retrieve the API version

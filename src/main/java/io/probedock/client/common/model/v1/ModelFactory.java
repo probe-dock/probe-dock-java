@@ -144,7 +144,7 @@ public class ModelFactory {
 		String uid = config.getCurrentUid();
 		if (uid != null && !uid.isEmpty()) {
 			testRun.getTestReports().add(new TestReport(uid));
-			testRun.addData(ProbeTestRun.PROBE_DOCK_REPORT_UID, uid);
+			testRun.addData(ProbeTestRun.PROBEDOCK_REPORT_UID, uid);
 		}
 
 		if (testReports != null && !testReports.isEmpty()) {

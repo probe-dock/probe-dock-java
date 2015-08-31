@@ -54,7 +54,7 @@ public class Configuration {
     /**
      * Environment related
      */
-    private static final String ENV_PREFIX = "PROBE_DOCK_";
+    private static final String ENV_PREFIX = "PROBEDOCK_";
     private static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
 
     /**

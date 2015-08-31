@@ -1,3 +1,7 @@
+## v0.2.2 - August 31, 2015
+
+* Fixed PROBE_DOCK to PROBEDOCK for env vars prefix
+
 ## v0.2.0 - June 9, 2015
 
 * **Breaking changes**
