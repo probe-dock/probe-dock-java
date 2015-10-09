@@ -60,12 +60,6 @@ some examples. The examples are the right sequence.
 
 ```java
 /*
- * Create a fingerprint based on the class where the test is defined and the method
- * which is the test.
- */
-String fp = ModelFactory.createFingerPrint(testClass, testMethod);
-
-/*
  * Create a context which contains various information about the Java runtime environment like the VM version, Java
  * version and memory. This is recommended to create the context before the first test is run as it will also
  * take the data about the memory.
@@ -93,6 +87,12 @@ TestRun testRun = ModelFactory.createTestRun(
 );
 
 /*
+ * Create a fingerprint based on the class where the test is defined and the method
+ * which is the test.
+ */
+String fingerPrint = ModelFactory.createFingerPrint(testClass, testMethod);
+
+/*
  * Now, we are ready to collect the test results. So each time a test result is received, we need to create a test
  * result object.
  */
@@ -117,6 +117,11 @@ TestResult testResult = ModelFactory.createTestResult(
 ModelFactory.enrichTestResult(testResult, "io.probedock.whatever", "SomeClass", "someMethod");
 
 /*
+ * Now we can add the test result to the test run. We have to repeat that for each test collected.
+ */
+testRun.getTestResults().add(testResult);
+
+/*
  * Once the last test finished to run, it is useful to enrich the context with additional data. In fact,
  * it will add the memory state after all the tests execution.
  */
@@ -124,6 +129,22 @@ ModelFactory.enrichContext(context);
 
 // Once you have collected all the results, you can send them through the Connector
 ```
+
+### Summary
+
+To send results to Probe Dock, you need:
+
+1. Create the testing `Context`
+2. Create the `Probe` data
+3. Create the `TestRun` to collect the tests
+4. Collect each test result
+5. For each test result collected
+  1. Generate the `fingerprint`
+  2. Create the `TestResult`
+  3. Enrich the `TestResult`
+  4. Add the `TestResult` to the `TestRun`
+6. Finally, once all the tests were executed, you can enrich the `Context` with additional data
+7. And then send the results to Probe Dock
 
 ## Contributing
 
