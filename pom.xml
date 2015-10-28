@@ -7,7 +7,7 @@
 
     <groupId>io.probedock.client</groupId>
     <artifactId>probedock-java</artifactId>
-    <version>0.2.2</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>Probe Dock Client Java</name>
@@ -199,7 +199,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.14</version>
+            <version>1.9</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -210,6 +210,11 @@
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
             <version>1.9</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.opensagres.js</groupId>
+            <artifactId>minimatch.java</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>

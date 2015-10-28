@@ -5,6 +5,7 @@ import io.probedock.client.annotations.ProbeTestClass;
 import io.probedock.client.common.config.Configuration;
 import io.probedock.client.utils.CollectionHelper;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,17 +44,44 @@ public class TestResultDataUtils {
      * @return The category found
      */
     public static String getCategory(Configuration configuration, ProbeTestClass classAnnotation, ProbeTest methodAnnotation, String defaultCategory) {
+        return getCategory(null, configuration, classAnnotation, methodAnnotation, defaultCategory);
+    }
+
+    /**
+     * Retrieve the category to apply to the test
+     *
+     * @param packageName The package name to match for the category
+     * @param configuration The configuration to check if a category is provided
+     * @param classAnnotation The class annotation to get the override category
+     * @param methodAnnotation The method annotation to get the override category
+     * @param defaultCategory The default category if none is found
+     * @return The category found
+     */
+    public static String getCategory(String packageName, Configuration configuration, ProbeTestClass classAnnotation, ProbeTest methodAnnotation, String defaultCategory) {
         if (methodAnnotation != null && methodAnnotation.category() != null && !methodAnnotation.category().isEmpty()) {
             return methodAnnotation.category();
         }
         else if (classAnnotation != null && classAnnotation.category() != null && !classAnnotation.category().isEmpty()) {
             return classAnnotation.category();
         }
-        else if (configuration.getCategory() != null && !configuration.getCategory().isEmpty()) {
-            return configuration.getCategory();
-        }
         else {
-            return defaultCategory;
+            // Try to match against patterns configured
+            Map.Entry<String, String> match = PackageMatcher.match(configuration.getCategoriesByPackage(), packageName);
+
+            // A category is found for the pattern
+            if (match != null) {
+                return match.getValue();
+            }
+
+            // Fallback on the category configured in the file
+            else if (configuration.getCategory() != null && !configuration.getCategory().isEmpty()) {
+                return configuration.getCategory();
+            }
+
+            // Fallback on the default category
+            else {
+                return defaultCategory;
+            }
         }
     }
 

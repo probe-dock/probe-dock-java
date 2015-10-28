@@ -1,3 +1,14 @@
+## v0.3.0 - October 28, 2015
+
+* Added the support to specify the category based on package patterns configured in `probedock.yml`
+
+  ```yml
+  java:
+    categoriesByPackage:
+      io.probedock.integration.*: Integration
+      io.probedock.rest.*: API
+  ```
+
 ## v0.2.2 - August 31, 2015
 
 * Fixed PROBE_DOCK to PROBEDOCK for env vars prefix

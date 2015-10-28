@@ -8,9 +8,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -104,24 +102,44 @@ public class TestResultDataUtilsTest {
     @Test
     public void itShouldBePossibleToRetrieveMethodCategoryWhenAvailable() {
         when(configuration.getCategory()).thenReturn(null);
-        assertEquals("methodCategory", TestResultDataUtils.getCategory(configuration, classAnnotationWithEmptyData, methodAnnotation, "defaultCategory"));
+        assertEquals("methodCategory", TestResultDataUtils.getCategory("io.probedock", configuration, classAnnotationWithEmptyData, methodAnnotation, "defaultCategory"));
     }
 
     @Test
     public void itShouldBePossibleToRetrieveClassCategoryWhenAvailable() {
         when(configuration.getCategory()).thenReturn(null);
-        assertEquals("classCategory", TestResultDataUtils.getCategory(configuration, classAnnotation, methodAnnotationWithEmptyData, "defaultCategory"));
+        assertEquals("classCategory", TestResultDataUtils.getCategory("io.probedock", configuration, classAnnotation, methodAnnotationWithEmptyData, "defaultCategory"));
     }
 
     @Test
     public void itShouldBePossibleToRetrieveConfigurationCategoryWhenAvailable() {
         when(configuration.getCategory()).thenReturn("configurationCategory");
-        assertEquals("configurationCategory", TestResultDataUtils.getCategory(configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
+        assertEquals("configurationCategory", TestResultDataUtils.getCategory("io.probedock", configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
     }
 
     @Test
     public void itShouldBePossibleToRetrieveDefaultCategoryWhenAvailable() {
         when(configuration.getCategory()).thenReturn(null);
+        assertEquals("defaultCategory", TestResultDataUtils.getCategory("io.probedock", configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
+    }
+
+    @Test
+    public void itShouldBePossibleToRetrievePackageCategoryWhenAvailable() {
+        Map<String, String> patterns = new HashMap<>();
+        patterns.put("io.probedock", "categoryByPackage");
+
+        when(configuration.getCategoriesByPackage()).thenReturn(patterns);
+        assertEquals("categoryByPackage", TestResultDataUtils.getCategory("io.probedock", configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
+    }
+
+    @Test
+    public void itShouldBePossibleToUseThePackageMatchingToRetrieveTheCategory() {
+        Map<String, String> patterns = new HashMap<>();
+        patterns.put("io.probedock", "categoryByPackage");
+
+        when(configuration.getCategoriesByPackage()).thenReturn(patterns);
+        when(configuration.getCategory()).thenReturn(null);
+        assertEquals("defaultCategory", TestResultDataUtils.getCategory(null, configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
         assertEquals("defaultCategory", TestResultDataUtils.getCategory(configuration, classAnnotationWithEmptyData, methodAnnotationWithEmptyData, "defaultCategory"));
     }
 

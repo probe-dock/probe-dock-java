@@ -14,18 +14,21 @@ import java.util.Map;
  * YAML configuration file to handle YAML format for the Apache Configuration framework.
  *
  * @author Simon Oulevay <simon.oulevay@probedock.io>
+ * @author Laurent Prevost <laurent.prevost@probedock.io>
  */
 public class YamlConfigurationFile extends AbstractFileConfiguration {
 
 	private Yaml yaml;
 	private String rootNodeName;
 	private String serversProperty;
+	private String categoriesByPackage;
 	private ServerListConfiguration serverList;
 
 	public YamlConfigurationFile(String filename, String rootNodeName, ServerListConfiguration serverList) throws ConfigurationException {
 		this.yaml = new Yaml();
 		this.rootNodeName = rootNodeName;
 		this.serversProperty = rootNodeName + ".servers";
+		this.categoriesByPackage = rootNodeName + ".java.categoriesByPackage";
 		this.serverList = serverList;
 		setFileName(filename);
 		load();
@@ -43,7 +46,7 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 			throw new ConfigurationException("Probe Dock configuration must be a map.");
 		}
 
-		loadYamlValue((Map<String, Object>) document, rootNodeName);
+		loadYamlValue(document, rootNodeName);
 
 		setAutoSave(previousAutoSave);
 	}
@@ -55,6 +58,12 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 			if (path.equals(serversProperty)) {
 				loadServers((Map<String, Object>) value);
 				return;
+			}
+
+			// Provide the way to convert the YAML structure to the Apache config structure. We want to keep
+			// the categories by package as a map and not to convert each node to another node in the Apache config.
+			if (path.equals(categoriesByPackage)) {
+				addProperty(path, value);
 			}
 
 			final Map map = (Map) value;

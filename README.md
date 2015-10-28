@@ -20,6 +20,32 @@ In your pom file:
 </dependency>
 ```
 
+## Specific configuration
+
+The probes based on this library have the possibility to configure the category based on Package pattern matching.
+
+```yml
+...
+java:
+  categoriesByPackage:
+    io.probedock.integration**: Integration
+    io.probedock.api: API
+    io.probedock.e2e.*: End to end
+    ...
+```
+
+Once a pattern is matching the testing class package, the category is used. The `class` annotation has the precedence on this behavior. The `method` annotation has the precedence on the category define in the `class` annotation. In fact, the behavior to get the category is the following:
+
+  1. From the `method` annotation
+  2. From the `class` annotation
+  3. From the package pattern matching
+  4. From the configuration file
+    1. From the project configuration
+    2. From the main configuration
+  5. The default category hardcoded in the probe
+  
+The package pattern matching is done through a port of [minimatch](https://github.com/angelozerr/minimatch.java). The `/` is replaced by `.` when you specify the pattern in the configuration file. It is not possible to specify an extension and it does not make any sens for that as packages are only folders in fact.
+
 ## How to create a new Java based client
 
 ### Connector class

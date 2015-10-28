@@ -7,9 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -75,6 +73,7 @@ public class Configuration {
     private static final String P_PAYLOAD_SAVE = P_ROOT_NODE_NAME + ".payload.save";
 
     private static final String P_SERIALIZER_CLASS = P_ROOT_NODE_NAME + ".java.serializerClass";
+    private static final String P_CATEGORIESBYPACKAGE = P_ROOT_NODE_NAME + ".java.categoriesByPackage";
 
     private static final String P_PROJECT_API_ID = P_ROOT_NODE_NAME + ".project.apiId";
     private static final String P_PROJECT_VERSION = P_ROOT_NODE_NAME + ".project.version";
@@ -105,6 +104,7 @@ public class Configuration {
     private Set<String> contributors;
     private Set<String> tags;
     private Set<String> tickets;
+    private Map<String, String> categoriesByPackage;
 
     private boolean disabled = false;
 
@@ -373,6 +373,25 @@ public class Configuration {
         }
 
         return config.getString(P_CATEGORY);
+    }
+
+    /**
+     * @return Get categories by package, if none, empty map returned
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getCategoriesByPackage() {
+        if (categoriesByPackage == null) {
+            categoriesByPackage = new HashMap<>();
+
+            Map<String, String> globalPackages = (Map<String, String>) config.getProperty(P_CATEGORIESBYPACKAGE);
+
+            if (globalPackages != null && !globalPackages.isEmpty()) {
+                categoriesByPackage.putAll(globalPackages);
+            }
+
+        }
+
+        return categoriesByPackage;
     }
 
     /**
