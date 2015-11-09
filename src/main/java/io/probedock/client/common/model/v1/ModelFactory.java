@@ -257,7 +257,7 @@ public class ModelFactory {
 		MetaDataBuilder builder = new MetaDataBuilder();
 
 		builder
-			.add("java.package", packageName)
+			.add("java.package", (packageName != null ? packageName : "defaultPackage"))
 			.add("java.class", className)
 			.add("java.method", methodName);
 

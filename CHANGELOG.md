@@ -1,3 +1,7 @@
+## v0.3.1 - November 9, 2015
+
+* Fixed a possible NPE related to https://github.com/probedock/probedock-junit/issues/1
+
 ## v0.3.0 - October 28, 2015
 
 * Added the support to specify the category based on package patterns configured in `probedock.yml`
