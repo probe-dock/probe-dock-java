@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test for class {@link ModelFactory}
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class ModelFactoryTest {
 	private TestResult validTestResult;
@@ -775,11 +775,21 @@ public class ModelFactoryTest {
 	public void enrichTestResultShouldAddPackageClassAndMethodNamesInMetaData() {
 		TestResult testResult = new TestResult();
 
-		ModelFactory.enrichTestResult(testResult, "package", "class", "method");
+		ModelFactory.enrichTestResult(testResult, "package", "class", "method", 10);
 
 		assertEquals("package", testResult.getData().get("java.package"));
 		assertEquals("class", testResult.getData().get("java.class"));
 		assertEquals("method", testResult.getData().get("java.method"));
+		assertEquals("10", testResult.getData().get("java.line"));
+	}
+
+	@Test
+	public void noEnrichmentOfTestLineShouldBeDoneWhenLineIsNegative() {
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(testResult, "package", "class", "method", -1);
+
+		assertNull(testResult.getData().get("java.line"));
 	}
 
 	@Test

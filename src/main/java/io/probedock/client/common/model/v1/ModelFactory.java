@@ -16,7 +16,7 @@ import java.util.Set;
  * Model factory to facilitate the creation of tests, test runs
  * and payloads.
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class ModelFactory {
 	/**
@@ -252,14 +252,19 @@ public class ModelFactory {
 	 * @param packageName The package name
 	 * @param className The class name
 	 * @param methodName The method name
+	 * @param lineNumber The line number
 	 */
-	public static void enrichTestResult(TestResult result, String packageName, String className, String methodName) {
+	public static void enrichTestResult(TestResult result, String packageName, String className, String methodName, int lineNumber) {
 		MetaDataBuilder builder = new MetaDataBuilder();
 
 		builder
 			.add("java.package", (packageName != null ? packageName : "defaultPackage"))
 			.add("java.class", className)
 			.add("java.method", methodName);
+
+		if (lineNumber >= 0) {
+			builder.add("file.line", "" + lineNumber);
+		}
 
 		result.addData(builder.toMetaData());
 	}
