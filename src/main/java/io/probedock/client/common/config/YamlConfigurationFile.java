@@ -13,8 +13,8 @@ import java.util.Map;
 /**
  * YAML configuration file to handle YAML format for the Apache Configuration framework.
  *
- * @author Simon Oulevay <simon.oulevay@probedock.io>
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Simon Oulevay simon.oulevay@probedock.io
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class YamlConfigurationFile extends AbstractFileConfiguration {
 

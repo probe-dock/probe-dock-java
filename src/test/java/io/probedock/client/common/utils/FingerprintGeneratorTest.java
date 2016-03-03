@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test for class {@link io.probedock.client.common.utils.FingerprintGenerator}
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class FingerprintGeneratorTest {
 	@Test

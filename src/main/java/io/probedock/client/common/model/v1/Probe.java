@@ -6,7 +6,7 @@ import io.probedock.client.common.model.ProbeInfo;
 /**
  * Probe info
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class Probe implements ProbeInfo {
     @JsonProperty("name")

@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * <p/>
  * The configuration is not thread safe but it is not so critical. Performance issues should be there.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class Configuration {
     private static final Logger LOGGER = Logger.getLogger(Configuration.class.getCanonicalName());

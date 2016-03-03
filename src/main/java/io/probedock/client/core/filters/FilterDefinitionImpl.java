@@ -3,7 +3,7 @@ package io.probedock.client.core.filters;
 /**
  * Define the structure of a filter. Basically, it consists of a type and a text
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class FilterDefinitionImpl implements FilterDefinition {
     private String type;

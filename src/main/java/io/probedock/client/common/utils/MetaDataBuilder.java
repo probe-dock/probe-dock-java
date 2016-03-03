@@ -7,7 +7,7 @@ import java.util.Map;
  * The meta data builder is a helper class to facilitate the creation and
  * addition of new meta data to the different Probe Dock data structure.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class MetaDataBuilder {
 	/**

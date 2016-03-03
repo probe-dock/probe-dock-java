@@ -10,7 +10,7 @@ import static org.junit.Assert.fail;
 /**
  * Test for class {@link Inflector}
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class InflectorTest {
     @ProbeTest(name = "This is a custom test name")

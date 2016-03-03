@@ -6,7 +6,7 @@ import io.probedock.client.common.model.ProbeTestReport;
 /**
  * Define a report configuration
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestReport implements ProbeTestReport {
     @JsonProperty("uid")

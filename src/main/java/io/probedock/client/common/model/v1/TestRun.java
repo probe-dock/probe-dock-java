@@ -12,8 +12,8 @@ import java.util.Map;
 /**
  * A list of test testResults for a specific version of a project.
  *
- * @author Simon Oulevay <simon.oulevay@probedock.io>
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Simon Oulevay simon.oulevay@probedock.io
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestRun implements ProbeTestRun {
 	@JsonIgnore

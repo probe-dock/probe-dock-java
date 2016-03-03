@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test class for {@link CollectionHelper}
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class CollectionHelperTest {
 	@Mock

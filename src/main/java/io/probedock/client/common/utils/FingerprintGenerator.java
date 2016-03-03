@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 /**
  * Footprint utility to generate footprints from strings
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class FingerprintGenerator {
 	private static final Logger LOGGER = Logger.getLogger(FingerprintGenerator.class.getCanonicalName());

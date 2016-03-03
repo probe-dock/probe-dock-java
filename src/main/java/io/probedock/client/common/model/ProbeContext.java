@@ -3,7 +3,7 @@ package io.probedock.client.common.model;
 /**
  * Context of test execution
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public interface ProbeContext {
     String OS_NAME = "os.name";

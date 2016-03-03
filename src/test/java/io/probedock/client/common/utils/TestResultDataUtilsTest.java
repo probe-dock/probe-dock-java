@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test for class {@link Inflector}
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestResultDataUtilsTest {
     @ProbeTestClass(

@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Probe Dock root payload to send test results to the server.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public interface ProbeTestRun {
 	String PROBEDOCK_REPORT_UID = "probedock.report.uid";

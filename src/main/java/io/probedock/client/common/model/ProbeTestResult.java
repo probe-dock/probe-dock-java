@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Define what a test result should be
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public interface ProbeTestResult {
 	/**

@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Context of the tests execution
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class Context implements ProbeContext {
     @JsonProperty("context")

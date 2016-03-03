@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Probe Dock server configuration.
  *
- * @author Simon Oulevay <simon.oulevay@probedock.io>
+ * @author Simon Oulevay simon.oulevay@probedock.io
  */
 public class ServerConfiguration {
 

@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Match the package against kind of minimatch patterns.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class PackageMatcher {
     /**

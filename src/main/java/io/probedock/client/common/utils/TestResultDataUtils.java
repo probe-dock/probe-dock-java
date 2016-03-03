@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Utilities to extract various data from the test and annotations to send test results.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestResultDataUtils {
     /**

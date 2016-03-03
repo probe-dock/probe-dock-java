@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 /**
  * Connector to send the payloads to Probe Dock.
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class Connector {
 	private static final Logger LOGGER = Logger.getLogger(Connector.class.getCanonicalName());

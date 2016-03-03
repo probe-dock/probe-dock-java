@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * To apply some information across multiple tests
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
