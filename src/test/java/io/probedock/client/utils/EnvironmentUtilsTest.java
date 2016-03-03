@@ -46,18 +46,19 @@ public class EnvironmentUtilsTest {
     @Test
     public void itShouldBePossibleToRetrieveIntegerEnvVar() {
         envVars.put("PROBEDOCK_MY_VAR", "12");
-        assertEquals(12, EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
+        assertEquals(new Integer(12), EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
     }
 
     @Test
     public void itShouldBePossibleToRetrieveIntegerDefaultValueWhenEnvVarIsNotPresent() {
-        assertEquals(123, EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
+        assertEquals(new Integer(123), EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
     }
 
     @Test
     public void itShouldBePossibleToRetrieveIntegerDefaultValueWhenEnvVarIsNull() {
         envVars.put("PROBEDOCK_MY_VAR", null);
-        assertEquals(123, EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
+        assertEquals(new Integer(123), EnvironmentUtils.getEnvironmentInteger("MY_VAR", 123));
+        assertNull(EnvironmentUtils.getEnvironmentInteger("MY_VAR", null));
     }
 
     @Test
@@ -75,5 +76,6 @@ public class EnvironmentUtilsTest {
     public void itShouldBePossibleToRetrieveBooleanDefaultValueWhenEnvVarIsNull() {
         envVars.put("PROBEDOCK_MY_VAR", null);
         assertTrue(EnvironmentUtils.getEnvironmentBoolean("MY_VAR", true));
+        assertNull(EnvironmentUtils.getEnvironmentBoolean("MY_VAR", null));
     }
 }

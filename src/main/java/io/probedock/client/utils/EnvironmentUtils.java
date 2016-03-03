@@ -29,7 +29,7 @@ public class EnvironmentUtils {
      * @param defaultValue The default value if not found
      * @return The value found, or the default if not found
      */
-    public static boolean getEnvironmentBoolean(String name, boolean defaultValue) {
+    public static Boolean getEnvironmentBoolean(String name, Boolean defaultValue) {
         if (envVars == null) {
             throw new IllegalStateException("The environment vars must be provided before calling getEnvironmentBoolean.");
         }
@@ -51,7 +51,7 @@ public class EnvironmentUtils {
      * @param defaultValue The default value if not found
      * @return The value found, or the default if not found
      */
-    public static int getEnvironmentInteger(String name, int defaultValue) {
+    public static Integer getEnvironmentInteger(String name, Integer defaultValue) {
         if (envVars == null) {
             throw new IllegalStateException("The environment vars must be provided before calling getEnvironmentInteger.");
         }

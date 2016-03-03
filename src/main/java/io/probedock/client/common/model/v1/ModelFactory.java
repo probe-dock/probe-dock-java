@@ -38,7 +38,7 @@ public class ModelFactory {
 	 *
 	 * @return The context created
 	 */
-	public static Context createContext() {
+	public static Context createContext(Configuration config) {
 		Context context = new Context();
 
 		context.setProperty(Context.OS_NAME, System.getProperty("os.name"));
@@ -68,6 +68,28 @@ public class ModelFactory {
 		context.setPreProperty(Context.MEMORY_TOTAL, Runtime.getRuntime().totalMemory());
 		context.setPreProperty(Context.MEMORY_FREE, Runtime.getRuntime().freeMemory());
 		context.setPreProperty(Context.MEMORY_USED, Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+
+		// Enriched with SCM data
+		if (config.getScmInfo() != null) {
+			ScmInfo scmInfo = config.getScmInfo();
+
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_NAME, scmInfo.getName());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_VERSION, scmInfo.getVersion());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_DIRTY, scmInfo.isDirty());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_BRANCH, scmInfo.getBranch());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_COMMIT, scmInfo.getCommit());
+
+			// Enriched with SCM remote data
+			if (scmInfo.getRemote() != null) {
+				ScmRemoteInfo scmRemoteInfo = scmInfo.getRemote();
+
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_NAME, scmRemoteInfo.getName());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_FETCH_URL, scmRemoteInfo.getFetchUrl());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_PUSH_URL, scmRemoteInfo.getPushUrl());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_AHEAD, scmRemoteInfo.getAhead());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_BEHIND, scmRemoteInfo.getBehind());
+			}
+		}
 
 		return context;
 	}
@@ -156,28 +178,6 @@ public class ModelFactory {
 
 		if (data != null && !data.isEmpty()) {
 			testRun.addData(data);
-		}
-
-		// Enriched with SCM data
-		if (config.getScmInfo() != null) {
-			ScmInfo scmInfo = config.getScmInfo();
-
-			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_NAME, scmInfo.getName());
-			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_VERSION, scmInfo.getVersion());
-			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_DIRTY, scmInfo.isDirty());
-			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_BRANCH, scmInfo.getBranch());
-			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_COMMIT, scmInfo.getCommit());
-
-			// Enriched with SCM remote data
-			if (scmInfo.getRemote() != null) {
-				ScmRemoteInfo scmRemoteInfo = scmInfo.getRemote();
-
-				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_NAME, scmRemoteInfo.getName());
-				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_FETCH_URL, scmRemoteInfo.getFetchUrl());
-				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_PUSH_URL, scmRemoteInfo.getPushUrl());
-				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_AHEAD, scmRemoteInfo.getAhead());
-				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_BEHIND, scmRemoteInfo.getBehind());
-			}
 		}
 
 		return testRun;
@@ -293,8 +293,8 @@ public class ModelFactory {
 		}
 
 		String basePath = "";
-		if (config.getProjectTestBasePath() != null) {
-			basePath = config.getProjectTestBasePath().replaceAll("\\\\", "/");
+		if (config.getProjectBaseTestPath() != null) {
+			basePath = config.getProjectBaseTestPath().replaceAll("\\\\", "/");
 		}
 
 		if (packageName == null) {

@@ -74,12 +74,8 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 				return;
 			}
 			else if (path.equals(scm)) {
-				if (!(value instanceof Map)) {
-					throw new ConfigurationException("SCM configuration must be a map");
-				}
-				else {
-					scmInfo.configureWith((Map<String, Object>) value);
-				}
+				System.out.println("SCM node detected");
+				scmInfo.configureWith((Map<String, Object>) value);
 			}
 
 			// Provide the way to convert the YAML structure to the Apache config structure. We want to keep

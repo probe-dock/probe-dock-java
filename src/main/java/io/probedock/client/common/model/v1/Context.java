@@ -28,6 +28,13 @@ public class Context implements ProbeContext {
     }
 
     @Override
+    public void setPropertyNullAvoided(String name, Object value) {
+        if (value != null) {
+            setProperty(name, value);
+        }
+    }
+
+    @Override
     public Object getPreProperty(String name) {
         return getProperty("pre." + name);
     }

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * Configuration for ProbeDock clients. Define general configuration that should be present for each run of a client.
@@ -52,7 +51,7 @@ public class Configuration {
      * Environment related
      */
     public static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
-    public static final String ENV_TEST_BASE_PATH = "TEST_BASE_PATH";
+    public static final String ENV_BASE_TEST_PATH = "BASE_TEST_PATH";
 
     /**
      * Parameter names
@@ -81,7 +80,7 @@ public class Configuration {
     private static final String P_PROJECT_TAGS = P_ROOT_NODE_NAME + ".project.tags";
     private static final String P_PROJECT_TICKETS = P_ROOT_NODE_NAME + ".project.tickets";
     private static final String P_PROJECT_GENERATORSEED = P_ROOT_NODE_NAME + ".project.seed";
-    private static final String P_PROJECT_TEST_BASE_PATH = P_ROOT_NODE_NAME + ".project.testBasePath";
+    private static final String P_PROJECT_BASE_TEST_PATH = P_ROOT_NODE_NAME + ".project.baseTestPath";
 
     /**
      * Not thread safe, not critical
@@ -278,10 +277,10 @@ public class Configuration {
     }
 
     /**
-     * @return The project test base path
+     * @return The project base test path
      */
-    public String getProjectTestBasePath() {
-        return EnvironmentUtils.getEnvironmentString(ENV_TEST_BASE_PATH, config.getString(P_PROJECT_TEST_BASE_PATH));
+    public String getProjectBaseTestPath() {
+        return EnvironmentUtils.getEnvironmentString(ENV_BASE_TEST_PATH, config.getString(P_PROJECT_BASE_TEST_PATH));
     }
 
     /**

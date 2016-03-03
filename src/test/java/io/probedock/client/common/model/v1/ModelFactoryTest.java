@@ -4,14 +4,12 @@ import io.probedock.client.common.config.Configuration;
 import io.probedock.client.common.config.ScmInfo;
 import io.probedock.client.common.config.ScmRemoteInfo;
 import io.probedock.client.common.utils.MetaDataBuilder;
-import io.probedock.client.utils.EnvironmentUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -57,7 +55,7 @@ public class ModelFactoryTest {
 
 	@Test
 	public void createContextShouldReturnFilledContextWithSeveralJavaAndPlatformInfo() {
-		Context context = ModelFactory.createContext();
+		Context context = ModelFactory.createContext(configuration);
 
 		assertNotNull(context.getProperty(Context.OS_NAME));
 		assertNotNull(context.getProperty(Context.OS_VERSION));
@@ -101,6 +99,62 @@ public class ModelFactoryTest {
 		assertNotNull(context.getPostProperty(Context.MEMORY_TOTAL));
 		assertNotNull(context.getPostProperty(Context.MEMORY_FREE));
 		assertNotNull(context.getPostProperty(Context.MEMORY_USED));
+	}
+
+	@Test
+	public void createContextWithScmInfoShouldBePossible() {
+		ScmRemoteInfo scmRemoteInfo = new ScmRemoteInfo();
+
+		scmRemoteInfo.setName("origin");
+		scmRemoteInfo.setAhead(12);
+		scmRemoteInfo.setBehind(21);
+		scmRemoteInfo.setFetchUrl("http://localhost.localdomain/fetch");
+		scmRemoteInfo.setPushUrl("http://localhost.localdomain/push");
+
+		ScmInfo scmInfo = new ScmInfo();
+
+		scmInfo.setName("git");
+		scmInfo.setVersion("1.2.3");
+		scmInfo.setCommit("1ddda5d8387b6d3641e099fce28c7fdff648c8a7");
+		scmInfo.setBranch("master");
+		scmInfo.setDirty(true);
+		scmInfo.setRemote(scmRemoteInfo);
+
+		when(configuration.getScmInfo()).thenReturn(scmInfo);
+
+		Context context = ModelFactory.createContext(configuration);
+
+		assertEquals("git", context.getProperty("scm.name"));
+		assertEquals("1.2.3", context.getProperty("scm.version"));
+		assertEquals("1ddda5d8387b6d3641e099fce28c7fdff648c8a7", context.getProperty("scm.commit"));
+		assertEquals("master", context.getProperty("scm.branch"));
+		assertEquals(true, context.getProperty("scm.dirty"));
+		assertEquals("origin", context.getProperty("scm.remote.name"));
+		assertEquals("http://localhost.localdomain/fetch", context.getProperty("scm.remote.url.fetch"));
+		assertEquals("http://localhost.localdomain/push", context.getProperty("scm.remote.url.push"));
+		assertEquals(12, context.getProperty("scm.remote.ahead"));
+		assertEquals(21, context.getProperty("scm.remote.behind"));
+	}
+
+	@Test
+	public void createContextWithoutScmInfoShouldBePossible() {
+		ScmInfo scmInfo = new ScmInfo();
+		scmInfo.setRemote(new ScmRemoteInfo());
+
+		when(configuration.getScmInfo()).thenReturn(scmInfo);
+
+		Context context = ModelFactory.createContext(configuration);
+
+		assertNull(context.getProperty("scm.name"));
+		assertNull(context.getProperty("scm.version"));
+		assertNull(context.getProperty("scm.commit"));
+		assertNull(context.getProperty("scm.branch"));
+		assertNull(context.getProperty("scm.dirty"));
+		assertNull(context.getProperty("scm.remote.name"));
+		assertNull(context.getProperty("scm.remote.url.fetch"));
+		assertNull(context.getProperty("scm.remote.url.push"));
+		assertNull(context.getProperty("scm.remote.ahead"));
+		assertNull(context.getProperty("scm.remote.behind"));
 	}
 
 	@Test
@@ -470,92 +524,6 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testRunCreationWithScmInfoShouldBePossible() {
-		ScmRemoteInfo scmRemoteInfo = new ScmRemoteInfo();
-
-		scmRemoteInfo.setName("origin");
-		scmRemoteInfo.setAhead(12);
-		scmRemoteInfo.setBehind(21);
-		scmRemoteInfo.setFetchUrl("http://localhost.localdomain/fetch");
-		scmRemoteInfo.setPushUrl("http://localhost.localdomain/push");
-
-		ScmInfo scmInfo = new ScmInfo();
-
-		scmInfo.setName("git");
-		scmInfo.setVersion("1.2.3");
-		scmInfo.setCommit("1ddda5d8387b6d3641e099fce28c7fdff648c8a7");
-		scmInfo.setBranch("master");
-		scmInfo.setDirty(true);
-		scmInfo.setRemote(scmRemoteInfo);
-
-		when(configuration.getScmInfo()).thenReturn(scmInfo);
-
-		Context context = new Context();
-		Probe probe = new Probe();
-
-		TestReport testReport = new TestReport();
-
-		TestRun testRun = ModelFactory.createTestRun(
-			configuration,
-			context,
-			probe,
-			"projectId",
-			"version",
-			"pipeline",
-			"stage",
-			Arrays.asList(testReport),
-			new MetaDataBuilder().add("key", "value").toMetaData()
-		);
-
-		assertEquals("git", testRun.getData().get("scm.name"));
-		assertEquals("1.2.3", testRun.getData().get("scm.version"));
-		assertEquals("1ddda5d8387b6d3641e099fce28c7fdff648c8a7", testRun.getData().get("scm.commit"));
-		assertEquals("master", testRun.getData().get("scm.branch"));
-		assertEquals("true", testRun.getData().get("scm.dirty"));
-		assertEquals("origin", testRun.getData().get("scm.remote.name"));
-		assertEquals("http://localhost.localdomain/fetch", testRun.getData().get("scm.remote.url.fetch"));
-		assertEquals("http://localhost.localdomain/push", testRun.getData().get("scm.remote.url.push"));
-		assertEquals("12", testRun.getData().get("scm.remote.ahead"));
-		assertEquals("21", testRun.getData().get("scm.remote.behind"));
-	}
-
-	@Test
-	public void testRunCreationWithoutScmInfoShouldBePossible() {
-		ScmInfo scmInfo = new ScmInfo();
-		scmInfo.setRemote(new ScmRemoteInfo());
-
-		when(configuration.getScmInfo()).thenReturn(scmInfo);
-
-		Context context = new Context();
-		Probe probe = new Probe();
-
-		TestReport testReport = new TestReport();
-
-		TestRun testRun = ModelFactory.createTestRun(
-			configuration,
-			context,
-			probe,
-			"projectId",
-			"version",
-			"pipeline",
-			"stage",
-			Arrays.asList(testReport),
-			new MetaDataBuilder().add("key", "value").toMetaData()
-		);
-
-		assertNull(testRun.getData().get("scm.name"));
-		assertNull(testRun.getData().get("scm.version"));
-		assertNull(testRun.getData().get("scm.commit"));
-		assertNull(testRun.getData().get("scm.branch"));
-		assertNull(testRun.getData().get("scm.dirty"));
-		assertNull(testRun.getData().get("scm.remote.name"));
-		assertNull(testRun.getData().get("scm.remote.url.fetch"));
-		assertNull(testRun.getData().get("scm.remote.url.push"));
-		assertNull(testRun.getData().get("scm.remote.ahead"));
-		assertNull(testRun.getData().get("scm.remote.behind"));
-	}
-
-	@Test
 	public void testResultCreationWithAllAttributesShouldBePossible() {
 		TestResult testResult =
 			ModelFactory.createTestResult(
@@ -898,7 +866,7 @@ public class ModelFactoryTest {
 
 	@Test
 	public void basePathMustBePresentInFilePathEnrichmentIfPresentInTheConfiguration() {
-		when(configuration.getProjectTestBasePath()).thenReturn("base/path/to/test/files");
+		when(configuration.getProjectBaseTestPath()).thenReturn("base/path/to/test/files");
 
 		TestResult testResult = new TestResult();
 
@@ -909,7 +877,7 @@ public class ModelFactoryTest {
 
 	@Test
 	public void basePathWithBackslashesAreReplacedBySlashes() {
-		when(configuration.getProjectTestBasePath()).thenReturn("base\\path\\to\\test\\files");
+		when(configuration.getProjectBaseTestPath()).thenReturn("base\\path\\to\\test\\files");
 
 		TestResult testResult = new TestResult();
 

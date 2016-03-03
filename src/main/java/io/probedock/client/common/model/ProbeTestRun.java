@@ -11,17 +11,6 @@ import java.util.Map;
 public interface ProbeTestRun {
 	String PROBEDOCK_REPORT_UID = "probedock.report.uid";
 
-	String PROBEDOCK_SCM_NAME = "scm.name";
-	String PROBEDOCK_SCM_VERSION = "scm.version";
-	String PROBEDOCK_SCM_DIRTY = "scm.dirty";
-	String PROBEDOCK_SCM_BRANCH = "scm.branch";
-	String PROBEDOCK_SCM_COMMIT = "scm.commit";
-	String PROBEDOCK_SCM_REMOTE_NAME = "scm.remote.name";
-	String PROBEDOCK_SCM_REMOTE_FETCH_URL = "scm.remote.url.fetch";
-	String PROBEDOCK_SCM_REMOTE_PUSH_URL = "scm.remote.url.push";
-	String PROBEDOCK_SCM_REMOTE_AHEAD = "scm.remote.ahead";
-	String PROBEDOCK_SCM_REMOTE_BEHIND = "scm.remote.behind";
-
 	/**
 	 * @return Retrieve the API version
 	 */

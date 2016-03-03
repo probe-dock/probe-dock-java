@@ -16,6 +16,8 @@ public class ScmInfo {
 	public static final String ENV_SCM_NAME = "SCM_NAME";
 	public static final String ENV_SCM_VERSION = "SCM_VERSION";
 	public static final String ENV_SCM_DIRTY = "SCM_DIRTY";
+	public static final String ENV_SCM_BRANCH = "SCM_BRANCH";
+	public static final String ENV_SCM_COMMIT = "SCM_COMMIT";
 
 	private String name;
 	private String version;
@@ -27,6 +29,9 @@ public class ScmInfo {
 
 	private ScmRemoteInfo remote;
 
+	public ScmInfo() {
+		remote = new ScmRemoteInfo();
+	}
 
 	public String getName() {
 		return name;
@@ -100,6 +105,8 @@ public class ScmInfo {
 		name = EnvironmentUtils.getEnvironmentString(ENV_SCM_NAME, name);
 		version = EnvironmentUtils.getEnvironmentString(ENV_SCM_VERSION, version);
 		dirty = EnvironmentUtils.getEnvironmentBoolean(ENV_SCM_DIRTY, dirty);
+		branch = EnvironmentUtils.getEnvironmentString(ENV_SCM_BRANCH, branch);
+		commit = EnvironmentUtils.getEnvironmentString(ENV_SCM_COMMIT, commit);
 		remote.overrideByEnvVars();
 	}
 
