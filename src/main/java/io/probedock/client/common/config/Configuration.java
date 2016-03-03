@@ -1,5 +1,6 @@
 package io.probedock.client.common.config;
 
+import io.probedock.client.utils.EnvironmentUtils;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -21,8 +22,6 @@ import java.util.regex.Pattern;
  */
 public class Configuration {
     private static final Logger LOGGER = Logger.getLogger(Configuration.class.getCanonicalName());
-
-    private static final Pattern BOOLEAN_PATTERN = Pattern.compile("\\A(1|y|yes|t|true)\\Z", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default home directory
@@ -52,8 +51,8 @@ public class Configuration {
     /**
      * Environment related
      */
-    private static final String ENV_PREFIX = "PROBEDOCK_";
-    private static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
+    public static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
+    public static final String ENV_TEST_BASE_PATH = "TEST_BASE_PATH";
 
     /**
      * Parameter names
@@ -82,6 +81,7 @@ public class Configuration {
     private static final String P_PROJECT_TAGS = P_ROOT_NODE_NAME + ".project.tags";
     private static final String P_PROJECT_TICKETS = P_ROOT_NODE_NAME + ".project.tickets";
     private static final String P_PROJECT_GENERATORSEED = P_ROOT_NODE_NAME + ".project.seed";
+    private static final String P_PROJECT_TEST_BASE_PATH = P_ROOT_NODE_NAME + ".project.testBasePath";
 
     /**
      * Not thread safe, not critical
@@ -99,6 +99,11 @@ public class Configuration {
     private ServerListConfiguration serverList;
 
     /**
+     * Remote configuration
+     */
+    private ScmInfo scmInfo;
+
+    /**
      * Local cache of contributors, tags and tickets
      */
     private Set<String> contributors;
@@ -112,11 +117,15 @@ public class Configuration {
      * Constructor
      */
     protected Configuration() {
+        // Set the environment variables
+        EnvironmentUtils.setEnvVars(System.getenv());
+
         config = new CompositeConfiguration();
         serverList = new ServerListConfiguration();
+        scmInfo = new ScmInfo();
 
         try {
-            config.addConfiguration(new YamlConfigurationFile(CLASSPATH_CONFIG, P_ROOT_NODE_NAME, serverList));
+            config.addConfiguration(new YamlConfigurationFile(CLASSPATH_CONFIG, P_ROOT_NODE_NAME, serverList, scmInfo));
         } catch (ConfigurationException ce) {
 
             if (LOGGER.getLevel() == Level.FINEST) {
@@ -127,7 +136,7 @@ public class Configuration {
         }
 
         try {
-            config.addConfiguration(new YamlConfigurationFile(BASE_CONFIG_PATH, P_ROOT_NODE_NAME, serverList));
+            config.addConfiguration(new YamlConfigurationFile(BASE_CONFIG_PATH, P_ROOT_NODE_NAME, serverList, scmInfo));
         } catch (ConfigurationException ce) {
             if (LOGGER.getLevel() == Level.FINEST) {
                 LOGGER.log(Level.FINEST, "Unable to load the Probe Dock configuration.", ce);
@@ -155,6 +164,9 @@ public class Configuration {
             disabled = true;
             LOGGER.warning("The selected server (" + server.getName() + ") in the Probe Dock configuration file is invalid");
         }
+
+        // Make sure the SCM configuration is overrided by ENV Vars
+        scmInfo.overrideByEnvVars();
     }
 
     /**
@@ -195,7 +207,7 @@ public class Configuration {
      * @return The home directory where Probe Dock client working files are stored
      */
     public final String getWorkspace() {
-        return getEnvironmentString("WORKSPACE", config.getString(P_WORKSPACE, DEFAULT_HOMEDIR)).replace("~", System.getProperty("user.home"));
+        return EnvironmentUtils.getEnvironmentString("WORKSPACE", config.getString(P_WORKSPACE, DEFAULT_HOMEDIR)).replace("~", System.getProperty("user.home"));
     }
 
     /**
@@ -210,7 +222,7 @@ public class Configuration {
     }
 
     private ServerConfiguration getInternalServerConfiguration() {
-        return serverList.get(getEnvironmentString("SERVER", config.getString(P_SERVER)));
+        return serverList.get(EnvironmentUtils.getEnvironmentString("SERVER", config.getString(P_SERVER)));
     }
 
     private String getServerListDescription() {
@@ -266,6 +278,20 @@ public class Configuration {
     }
 
     /**
+     * @return The project test base path
+     */
+    public String getProjectTestBasePath() {
+        return EnvironmentUtils.getEnvironmentString(ENV_TEST_BASE_PATH, config.getString(P_PROJECT_TEST_BASE_PATH));
+    }
+
+    /**
+     * @return The SCM info
+     */
+    public ScmInfo getScmInfo() {
+        return scmInfo;
+    }
+
+    /**
      * @return The pipeline name
      */
     public String getPipeline() {
@@ -294,7 +320,7 @@ public class Configuration {
      * @return By default, no print will be done
      */
     public boolean isPayloadPrint() {
-        return getEnvironmentBoolean("PRINT_PAYLOAD", config.getBoolean(P_PAYLOAD_PRINT, Boolean.FALSE));
+        return EnvironmentUtils.getEnvironmentBoolean("PRINT_PAYLOAD", config.getBoolean(P_PAYLOAD_PRINT, Boolean.FALSE));
     }
 
 
@@ -398,49 +424,21 @@ public class Configuration {
      * @return Define if the results must be stored or not locally
      */
     public boolean isSave() {
-        return getEnvironmentBoolean("SAVE_PAYLOAD", config.getBoolean(P_PAYLOAD_SAVE, Boolean.FALSE));
+        return EnvironmentUtils.getEnvironmentBoolean("SAVE_PAYLOAD", config.getBoolean(P_PAYLOAD_SAVE, Boolean.FALSE));
     }
 
     /**
      * @return Define if the test results must be send to Probe Dock.
      */
     public boolean isPublish() {
-        return getEnvironmentBoolean("PUBLISH", config.getBoolean(P_PUBLISH, Boolean.TRUE));
-    }
-
-    /**
-     * Retrieve boolean value for the environment variable name
-     *
-     * @param name The name of the variable without prefix
-     * @param defaultValue The default value if not found
-     * @return The value found, or the default if not found
-     */
-    private boolean getEnvironmentBoolean(String name, boolean defaultValue) {
-        String value = getEnvironmentString(name, null);
-
-        if (value == null) {
-            return defaultValue;
-        } else {
-            return BOOLEAN_PATTERN.matcher(value).matches();
-        }
-    }
-
-    /**
-     * Retrieve string value for the environment variable name
-     *
-     * @param name The name of the variable without prefix
-     * @param defaultValue The default value if not found
-     * @return The value found, or the default if not found
-     */
-    private String getEnvironmentString(String name, String defaultValue) {
-        return System.getenv(ENV_PREFIX + name) != null ? System.getenv(ENV_PREFIX + name) : defaultValue;
+        return EnvironmentUtils.getEnvironmentBoolean("PUBLISH", config.getBoolean(P_PUBLISH, Boolean.TRUE));
     }
 
     /**
      * @return The current UID, null if none is available
      */
     public String getCurrentUid() {
-        return getEnvironmentString(ENV_TEST_REPORT_UID, readUid(new File(UID_FILE_NAME)));
+        return EnvironmentUtils.getEnvironmentString(ENV_TEST_REPORT_UID, readUid(new File(UID_FILE_NAME)));
     }
 
     /**

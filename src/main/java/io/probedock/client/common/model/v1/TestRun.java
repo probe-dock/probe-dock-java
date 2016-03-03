@@ -136,6 +136,29 @@ public class TestRun implements ProbeTestRun {
 		this.data.put(key, value);
 	}
 
+	/**
+	 * Add a data to the metadata of the test run. If the value is null, no entry is added
+	 *
+	 * @param key The key of the value
+	 * @param value The value
+     */
+	public void addDataNullAvoided(String key, String value) {
+		if (value != null) {
+			addData(key, value);
+		}
+	}
+
+	/**
+	 * Add a data to the metadata of the test run. If the value is null, no entry is added. Use toString().
+	 * @param key
+	 * @param value
+     */
+	public void addDataNullAvoided(String key, Object value) {
+		if (value != null) {
+			addData(key, value.toString());
+		}
+	}
+
 	@Override
 	public List<TestResult> getTestResults() {
 		return testResults;

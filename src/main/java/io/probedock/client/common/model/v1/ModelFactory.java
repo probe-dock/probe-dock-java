@@ -1,6 +1,8 @@
 package io.probedock.client.common.model.v1;
 
 import io.probedock.client.common.config.Configuration;
+import io.probedock.client.common.config.ScmInfo;
+import io.probedock.client.common.config.ScmRemoteInfo;
 import io.probedock.client.common.model.ProbeTestRun;
 import io.probedock.client.common.utils.Constants;
 import io.probedock.client.common.utils.FingerprintGenerator;
@@ -8,6 +10,7 @@ import io.probedock.client.common.utils.MetaDataBuilder;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -155,6 +158,28 @@ public class ModelFactory {
 			testRun.addData(data);
 		}
 
+		// Enriched with SCM data
+		if (config.getScmInfo() != null) {
+			ScmInfo scmInfo = config.getScmInfo();
+
+			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_NAME, scmInfo.getName());
+			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_VERSION, scmInfo.getVersion());
+			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_DIRTY, scmInfo.isDirty());
+			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_BRANCH, scmInfo.getBranch());
+			testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_COMMIT, scmInfo.getCommit());
+
+			// Enriched with SCM remote data
+			if (scmInfo.getRemote() != null) {
+				ScmRemoteInfo scmRemoteInfo = scmInfo.getRemote();
+
+				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_NAME, scmRemoteInfo.getName());
+				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_FETCH_URL, scmRemoteInfo.getFetchUrl());
+				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_PUSH_URL, scmRemoteInfo.getPushUrl());
+				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_AHEAD, scmRemoteInfo.getAhead());
+				testRun.addDataNullAvoided(ProbeTestRun.PROBEDOCK_SCM_REMOTE_BEHIND, scmRemoteInfo.getBehind());
+			}
+		}
+
 		return testRun;
 	}
 	
@@ -248,13 +273,14 @@ public class ModelFactory {
 	/**
 	 * Enrich the test result with the java package, class and method names.
 	 *
+	 * @param config The configuration
 	 * @param result The result to enrich
 	 * @param packageName The package name
 	 * @param className The class name
 	 * @param methodName The method name
 	 * @param lineNumber The line number
 	 */
-	public static void enrichTestResult(TestResult result, String packageName, String className, String methodName, int lineNumber) {
+	public static void enrichTestResult(Configuration config, TestResult result, String packageName, String className, String methodName, int lineNumber) {
 		MetaDataBuilder builder = new MetaDataBuilder();
 
 		builder
@@ -265,6 +291,19 @@ public class ModelFactory {
 		if (lineNumber >= 0) {
 			builder.add("file.line", "" + lineNumber);
 		}
+
+		String basePath = "";
+		if (config.getProjectTestBasePath() != null) {
+			basePath = config.getProjectTestBasePath().replaceAll("\\\\", "/");
+		}
+
+		if (packageName == null) {
+			builder.add("file.path", Paths.get(basePath, className + ".java").toString());
+		}
+		else {
+			builder.add("file.path", Paths.get(basePath, packageName.replaceAll("\\.", "/"), className + ".java").toString());
+		}
+
 
 		result.addData(builder.toMetaData());
 	}
