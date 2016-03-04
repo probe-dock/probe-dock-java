@@ -74,7 +74,6 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 				return;
 			}
 			else if (path.equals(scm)) {
-				System.out.println("SCM node detected");
 				scmInfo.configureWith((Map<String, Object>) value);
 			}
 

@@ -52,6 +52,7 @@ public class Configuration {
      */
     public static final String ENV_TEST_REPORT_UID = "TEST_REPORT_UID";
     public static final String ENV_BASE_TEST_PATH = "BASE_TEST_PATH";
+    public static final String CONFIG_PATH = "CONFIG";
 
     /**
      * Parameter names
@@ -124,7 +125,7 @@ public class Configuration {
         scmInfo = new ScmInfo();
 
         try {
-            config.addConfiguration(new YamlConfigurationFile(CLASSPATH_CONFIG, P_ROOT_NODE_NAME, serverList, scmInfo));
+            config.addConfiguration(new YamlConfigurationFile(EnvironmentUtils.getEnvironmentString(CONFIG_PATH, CLASSPATH_CONFIG), P_ROOT_NODE_NAME, serverList, scmInfo));
         } catch (ConfigurationException ce) {
 
             if (LOGGER.getLevel() == Level.FINEST) {
