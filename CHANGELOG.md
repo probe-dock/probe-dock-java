@@ -1,3 +1,19 @@
+## v0.4.0 - March 8, 2016
+
+* Added the support to send SCM data to Probe Dock. You can set several env vars to send the SCM data:
+    - PROBEDOCK_SCM_NAME
+    - PROBEDOCK_SCM_VERSION
+    - PROBEDOCK_SCM_BRANCH
+    - PROBEDOCK_SCM_COMMIT
+    - PROBEDOCK_SCM_DIRTY
+    - PROBEDOCK_SCM_REMOTE_NAME
+    - PROBEDOCK_SCM_REMOTE_URL_FETCH
+    - PROBEDOCK_SCM_REMOTE_URL_PUSH
+    - PROBEDOCK_SCM_REMOTE_AHEAD
+    - PROBEDOCK_SCM_REMOTE_BEHIND
+
+* Added the support to accept configuration file through PROBEDOOCK_CONFIG env var
+
 ## v0.3.1 - November 9, 2015
 
 * Fixed a possible NPE related to https://github.com/probedock/probedock-junit/issues/1
