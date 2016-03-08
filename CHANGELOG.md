@@ -11,8 +11,8 @@
     - PROBEDOCK_SCM_REMOTE_URL_PUSH
     - PROBEDOCK_SCM_REMOTE_AHEAD
     - PROBEDOCK_SCM_REMOTE_BEHIND
-
 * Added the support to accept configuration file through PROBEDOOCK_CONFIG env var
+* Added the support to configure the test base path through PROBEDOCK_TESTBASEPATH env var
 
 ## v0.3.1 - November 9, 2015
 
