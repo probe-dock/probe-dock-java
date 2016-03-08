@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 /**
  * TestResult class to store the data related to tests
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestResult implements ProbeTestResult {
 

@@ -12,8 +12,8 @@ import java.util.Map;
 /**
  * A list of test testResults for a specific version of a project.
  *
- * @author Simon Oulevay <simon.oulevay@probedock.io>
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Simon Oulevay simon.oulevay@probedock.io
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class TestRun implements ProbeTestRun {
 	@JsonIgnore
@@ -134,6 +134,29 @@ public class TestRun implements ProbeTestRun {
 			this.data = new HashMap<>();
 		}
 		this.data.put(key, value);
+	}
+
+	/**
+	 * Add a data to the metadata of the test run. If the value is null, no entry is added
+	 *
+	 * @param key The key of the value
+	 * @param value The value
+     */
+	public void addDataNullAvoided(String key, String value) {
+		if (value != null) {
+			addData(key, value);
+		}
+	}
+
+	/**
+	 * Add a data to the metadata of the test run. If the value is null, no entry is added. Use toString().
+	 * @param key
+	 * @param value
+     */
+	public void addDataNullAvoided(String key, Object value) {
+		if (value != null) {
+			addData(key, value.toString());
+		}
 	}
 
 	@Override

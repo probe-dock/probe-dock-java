@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Proxy configuration.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class ProxyConfiguration {
 	private String host;

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /**
  * File store to keep the result between runs
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class FileStore {
 	private static final Logger LOGGER = Logger.getLogger(FileStore.class.getCanonicalName());

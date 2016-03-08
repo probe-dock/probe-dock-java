@@ -1,6 +1,8 @@
 package io.probedock.client.common.model.v1;
 
 import io.probedock.client.common.config.Configuration;
+import io.probedock.client.common.config.ScmInfo;
+import io.probedock.client.common.config.ScmRemoteInfo;
 import io.probedock.client.common.model.ProbeTestRun;
 import io.probedock.client.common.utils.Constants;
 import io.probedock.client.common.utils.FingerprintGenerator;
@@ -8,6 +10,7 @@ import io.probedock.client.common.utils.MetaDataBuilder;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +19,7 @@ import java.util.Set;
  * Model factory to facilitate the creation of tests, test runs
  * and payloads.
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class ModelFactory {
 	/**
@@ -35,7 +38,7 @@ public class ModelFactory {
 	 *
 	 * @return The context created
 	 */
-	public static Context createContext() {
+	public static Context createContext(Configuration config) {
 		Context context = new Context();
 
 		context.setProperty(Context.OS_NAME, System.getProperty("os.name"));
@@ -65,6 +68,28 @@ public class ModelFactory {
 		context.setPreProperty(Context.MEMORY_TOTAL, Runtime.getRuntime().totalMemory());
 		context.setPreProperty(Context.MEMORY_FREE, Runtime.getRuntime().freeMemory());
 		context.setPreProperty(Context.MEMORY_USED, Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+
+		// Enriched with SCM data
+		if (config.getScmInfo() != null) {
+			ScmInfo scmInfo = config.getScmInfo();
+
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_NAME, scmInfo.getName());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_VERSION, scmInfo.getVersion());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_DIRTY, scmInfo.isDirty());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_BRANCH, scmInfo.getBranch());
+			context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_COMMIT, scmInfo.getCommit());
+
+			// Enriched with SCM remote data
+			if (scmInfo.getRemote() != null) {
+				ScmRemoteInfo scmRemoteInfo = scmInfo.getRemote();
+
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_NAME, scmRemoteInfo.getName());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_FETCH_URL, scmRemoteInfo.getFetchUrl());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_PUSH_URL, scmRemoteInfo.getPushUrl());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_AHEAD, scmRemoteInfo.getAhead());
+				context.setPropertyNullAvoided(Context.PROBEDOCK_SCM_REMOTE_BEHIND, scmRemoteInfo.getBehind());
+			}
+		}
 
 		return context;
 	}
@@ -248,18 +273,37 @@ public class ModelFactory {
 	/**
 	 * Enrich the test result with the java package, class and method names.
 	 *
+	 * @param config The configuration
 	 * @param result The result to enrich
 	 * @param packageName The package name
 	 * @param className The class name
 	 * @param methodName The method name
+	 * @param lineNumber The line number
 	 */
-	public static void enrichTestResult(TestResult result, String packageName, String className, String methodName) {
+	public static void enrichTestResult(Configuration config, TestResult result, String packageName, String className, String methodName, int lineNumber) {
 		MetaDataBuilder builder = new MetaDataBuilder();
 
 		builder
 			.add("java.package", (packageName != null ? packageName : "defaultPackage"))
 			.add("java.class", className)
 			.add("java.method", methodName);
+
+		if (lineNumber >= 0) {
+			builder.add("file.line", "" + lineNumber);
+		}
+
+		String basePath = "";
+		if (config.getProjectBaseTestPath() != null) {
+			basePath = config.getProjectBaseTestPath().replaceAll("\\\\", "/");
+		}
+
+		if (packageName == null) {
+			builder.add("file.path", Paths.get(basePath, className + ".java").toString());
+		}
+		else {
+			builder.add("file.path", Paths.get(basePath, packageName.replaceAll("\\.", "/"), className + ".java").toString());
+		}
+
 
 		result.addData(builder.toMetaData());
 	}

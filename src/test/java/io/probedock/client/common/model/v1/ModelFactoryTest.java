@@ -1,6 +1,8 @@
 package io.probedock.client.common.model.v1;
 
 import io.probedock.client.common.config.Configuration;
+import io.probedock.client.common.config.ScmInfo;
+import io.probedock.client.common.config.ScmRemoteInfo;
 import io.probedock.client.common.utils.MetaDataBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -8,11 +10,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -20,7 +18,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test for class {@link ModelFactory}
  * 
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class ModelFactoryTest {
 	private TestResult validTestResult;
@@ -57,7 +55,7 @@ public class ModelFactoryTest {
 
 	@Test
 	public void createContextShouldReturnFilledContextWithSeveralJavaAndPlatformInfo() {
-		Context context = ModelFactory.createContext();
+		Context context = ModelFactory.createContext(configuration);
 
 		assertNotNull(context.getProperty(Context.OS_NAME));
 		assertNotNull(context.getProperty(Context.OS_VERSION));
@@ -101,6 +99,62 @@ public class ModelFactoryTest {
 		assertNotNull(context.getPostProperty(Context.MEMORY_TOTAL));
 		assertNotNull(context.getPostProperty(Context.MEMORY_FREE));
 		assertNotNull(context.getPostProperty(Context.MEMORY_USED));
+	}
+
+	@Test
+	public void createContextWithScmInfoShouldBePossible() {
+		ScmRemoteInfo scmRemoteInfo = new ScmRemoteInfo();
+
+		scmRemoteInfo.setName("origin");
+		scmRemoteInfo.setAhead(12);
+		scmRemoteInfo.setBehind(21);
+		scmRemoteInfo.setFetchUrl("http://localhost.localdomain/fetch");
+		scmRemoteInfo.setPushUrl("http://localhost.localdomain/push");
+
+		ScmInfo scmInfo = new ScmInfo();
+
+		scmInfo.setName("git");
+		scmInfo.setVersion("1.2.3");
+		scmInfo.setCommit("1ddda5d8387b6d3641e099fce28c7fdff648c8a7");
+		scmInfo.setBranch("master");
+		scmInfo.setDirty(true);
+		scmInfo.setRemote(scmRemoteInfo);
+
+		when(configuration.getScmInfo()).thenReturn(scmInfo);
+
+		Context context = ModelFactory.createContext(configuration);
+
+		assertEquals("git", context.getProperty("scm.name"));
+		assertEquals("1.2.3", context.getProperty("scm.version"));
+		assertEquals("1ddda5d8387b6d3641e099fce28c7fdff648c8a7", context.getProperty("scm.commit"));
+		assertEquals("master", context.getProperty("scm.branch"));
+		assertEquals(true, context.getProperty("scm.dirty"));
+		assertEquals("origin", context.getProperty("scm.remote.name"));
+		assertEquals("http://localhost.localdomain/fetch", context.getProperty("scm.remote.url.fetch"));
+		assertEquals("http://localhost.localdomain/push", context.getProperty("scm.remote.url.push"));
+		assertEquals(12, context.getProperty("scm.remote.ahead"));
+		assertEquals(21, context.getProperty("scm.remote.behind"));
+	}
+
+	@Test
+	public void createContextWithoutScmInfoShouldBePossible() {
+		ScmInfo scmInfo = new ScmInfo();
+		scmInfo.setRemote(new ScmRemoteInfo());
+
+		when(configuration.getScmInfo()).thenReturn(scmInfo);
+
+		Context context = ModelFactory.createContext(configuration);
+
+		assertNull(context.getProperty("scm.name"));
+		assertNull(context.getProperty("scm.version"));
+		assertNull(context.getProperty("scm.commit"));
+		assertNull(context.getProperty("scm.branch"));
+		assertNull(context.getProperty("scm.dirty"));
+		assertNull(context.getProperty("scm.remote.name"));
+		assertNull(context.getProperty("scm.remote.url.fetch"));
+		assertNull(context.getProperty("scm.remote.url.push"));
+		assertNull(context.getProperty("scm.remote.ahead"));
+		assertNull(context.getProperty("scm.remote.behind"));
 	}
 
 	@Test
@@ -470,7 +524,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationWithAllAttributesShouldBePossible() {
+	public void testResultCreationWithAllAttributesShouldBePossible() {
 		TestResult testResult =
 			ModelFactory.createTestResult(
 				"key",
@@ -500,7 +554,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationWithOnlyMandatoryAttributesShouldBePossible() {
+	public void testResultCreationWithOnlyMandatoryAttributesShouldBePossible() {
 		TestResult testResult = ModelFactory.createTestResult(
 			null,
 			"fingerprint",
@@ -520,7 +574,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationWithoutFingerprintShouldRaiseAnError() {
+	public void testResultCreationWithoutFingerprintShouldRaiseAnError() {
 		try {
 			ModelFactory.createTestResult(
 				null,
@@ -545,7 +599,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationWithNegativeDurationShouldRaiseAnError() {
+	public void testResultCreationWithNegativeDurationShouldRaiseAnError() {
 		try {
 			ModelFactory.createTestResult(
 				null,
@@ -570,7 +624,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetDefaultMessageWhenTestIsFailedAndNullMessageWasProvided() {
+	public void testResultCreationShouldSetDefaultMessageWhenTestIsFailedAndNullMessageWasProvided() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"key",
 			"fingerprint",
@@ -590,7 +644,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetDefaultMessageWhenTestIsFailedAndEmptyMessageWasProvided() {
+	public void testResultCreationShouldSetDefaultMessageWhenTestIsFailedAndEmptyMessageWasProvided() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"key",
 			"fingerprint",
@@ -610,7 +664,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetTheKeyOnlyIfNotNullOrNotEmpty() {
+	public void testResultCreationShouldSetTheKeyOnlyIfNotNullOrNotEmpty() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"",
 			"fingerprint",
@@ -647,7 +701,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldTruncateTheMessageWhenBiggerThan50kCaracters() {
+	public void testResultCreationShouldTruncateTheMessageWhenBiggerThan50kCaracters() {
 		TestResult testResult = ModelFactory.createTestResult(
 			null,
 			"fingerprint",
@@ -667,7 +721,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetTheCategoryOnlyIfNotNullOrNotEmpty() {
+	public void testResultCreationShouldSetTheCategoryOnlyIfNotNullOrNotEmpty() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"",
 			"fingerprint",
@@ -704,7 +758,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetTheActiveOnlyIfNotNull() {
+	public void testResultCreationShouldSetTheActiveOnlyIfNotNull() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"",
 			"fingerprint",
@@ -724,7 +778,7 @@ public class ModelFactoryTest {
 	}
 
 	@Test
-	public void testCreationShouldSetTheContributorsTagsTicketsAndDataOnlyIfTheyAreNotNull() {
+	public void testResultCreationShouldSetTheContributorsTagsTicketsAndDataOnlyIfTheyAreNotNull() {
 		TestResult testResult = ModelFactory.createTestResult(
 			"",
 			"fingerprint",
@@ -775,11 +829,61 @@ public class ModelFactoryTest {
 	public void enrichTestResultShouldAddPackageClassAndMethodNamesInMetaData() {
 		TestResult testResult = new TestResult();
 
-		ModelFactory.enrichTestResult(testResult, "package", "class", "method");
+		ModelFactory.enrichTestResult(configuration, testResult, "package", "class", "method", 10);
 
 		assertEquals("package", testResult.getData().get("java.package"));
 		assertEquals("class", testResult.getData().get("java.class"));
 		assertEquals("method", testResult.getData().get("java.method"));
+		assertEquals("10", testResult.getData().get("file.line"));
+	}
+
+	@Test
+	public void noEnrichmentOfTestLineShouldBeDoneWhenLineIsNegative() {
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(configuration, testResult, "package", "class", "method", -1);
+
+		assertNull(testResult.getData().get("file.line"));
+	}
+
+	@Test
+	public void theFilePathMustBeEnrichedWithNoPackagePathWhenThePackageIsNull() {
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(configuration, testResult, null, "class", "method", 10);
+
+		assertEquals("class.java", testResult.getData().get("file.path"));
+	}
+
+	@Test
+	public void theFilePathMustBeEnrichedWithPackageTransformedToPathWhenPackageIsPresent() {
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(configuration, testResult, "io.probedock.client.common.model.v1", "ModelFactoryTest", "method", 10);
+
+		assertEquals("io/probedock/client/common/model/v1/ModelFactoryTest.java", testResult.getData().get("file.path"));
+	}
+
+	@Test
+	public void basePathMustBePresentInFilePathEnrichmentIfPresentInTheConfiguration() {
+		when(configuration.getProjectBaseTestPath()).thenReturn("base/path/to/test/files");
+
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(configuration, testResult, "io.probedock.client.common.model.v1", "ModelFactoryTest", "method", 10);
+
+		assertEquals("base/path/to/test/files/io/probedock/client/common/model/v1/ModelFactoryTest.java", testResult.getData().get("file.path"));
+	}
+
+	@Test
+	public void basePathWithBackslashesAreReplacedBySlashes() {
+		when(configuration.getProjectBaseTestPath()).thenReturn("base\\path\\to\\test\\files");
+
+		TestResult testResult = new TestResult();
+
+		ModelFactory.enrichTestResult(configuration, testResult, "io.probedock.client.common.model.v1", "ModelFactoryTest", "method", 10);
+
+		assertEquals("base/path/to/test/files/io/probedock/client/common/model/v1/ModelFactoryTest.java", testResult.getData().get("file.path"));
 	}
 
 	@Test

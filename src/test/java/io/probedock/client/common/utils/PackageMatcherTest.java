@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 /**
  * Test for class {@link PackageMatcher}
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class PackageMatcherTest {
     @Test

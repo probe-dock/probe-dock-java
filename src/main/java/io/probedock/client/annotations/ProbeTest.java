@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * added to the test methods are used to send the test results to
  * ProbeDock.
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

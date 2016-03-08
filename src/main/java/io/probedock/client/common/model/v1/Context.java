@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Context of the tests execution
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class Context implements ProbeContext {
     @JsonProperty("context")
@@ -25,6 +25,13 @@ public class Context implements ProbeContext {
     @Override
     public void setProperty(String name, Object value) {
         data.put(name, value);
+    }
+
+    @Override
+    public void setPropertyNullAvoided(String name, Object value) {
+        if (value != null) {
+            setProperty(name, value);
+        }
     }
 
     @Override

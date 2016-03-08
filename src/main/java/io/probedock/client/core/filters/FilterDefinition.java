@@ -3,7 +3,7 @@ package io.probedock.client.core.filters;
 /**
  * Filter definition
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public interface FilterDefinition {
     /**

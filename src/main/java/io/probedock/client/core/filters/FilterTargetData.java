@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Data structure to apply the filtering
  *
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class FilterTargetData {
     private final String tags;

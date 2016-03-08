@@ -13,8 +13,8 @@ import java.util.Map;
 /**
  * YAML configuration file to handle YAML format for the Apache Configuration framework.
  *
- * @author Simon Oulevay <simon.oulevay@probedock.io>
- * @author Laurent Prevost <laurent.prevost@probedock.io>
+ * @author Simon Oulevay simon.oulevay@probedock.io
+ * @author Laurent Prevost laurent.prevost@probedock.io
  */
 public class YamlConfigurationFile extends AbstractFileConfiguration {
 
@@ -22,14 +22,28 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 	private String rootNodeName;
 	private String serversProperty;
 	private String categoriesByPackage;
+	private String scm;
 	private ServerListConfiguration serverList;
+	private ScmInfo scmInfo;
 
-	public YamlConfigurationFile(String filename, String rootNodeName, ServerListConfiguration serverList) throws ConfigurationException {
+	/**
+	 * Constructor
+	 *
+	 * @param filename The configuration file name
+	 * @param rootNodeName The root node name
+	 * @param serverList The server list pre-initialized
+	 * @param scmInfo Th SCM info pre-initialized
+	 *
+	 * @throws ConfigurationException When a configuration error happens (wrong format, ...)
+     */
+	public YamlConfigurationFile(String filename, String rootNodeName, ServerListConfiguration serverList, ScmInfo scmInfo) throws ConfigurationException {
 		this.yaml = new Yaml();
 		this.rootNodeName = rootNodeName;
 		this.serversProperty = rootNodeName + ".servers";
 		this.categoriesByPackage = rootNodeName + ".java.categoriesByPackage";
+		this.scm = rootNodeName + ".scm";
 		this.serverList = serverList;
+		this.scmInfo = scmInfo;
 		setFileName(filename);
 		load();
 	}
@@ -58,6 +72,9 @@ public class YamlConfigurationFile extends AbstractFileConfiguration {
 			if (path.equals(serversProperty)) {
 				loadServers((Map<String, Object>) value);
 				return;
+			}
+			else if (path.equals(scm)) {
+				scmInfo.configureWith((Map<String, Object>) value);
 			}
 
 			// Provide the way to convert the YAML structure to the Apache config structure. We want to keep
