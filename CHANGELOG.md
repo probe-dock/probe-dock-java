@@ -1,3 +1,8 @@
+## v0.4.1 - June 22, 2016
+
+* Added a read timeout exception handling
+* Added the difference between connection timeout and read from server timeout
+
 ## v0.4.0 - March 8, 2016
 
 * Added the support to send SCM data to Probe Dock. You can set several env vars to send the SCM data:

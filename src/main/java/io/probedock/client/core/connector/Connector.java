@@ -24,6 +24,7 @@ public class Connector {
 	private static final String CONTENT_TYPE = "application/vnd.probe-dock.payload.v1+json";
 
 	private static final int CONNECTION_TIMEOUT = 10000;
+	private static final int CONNECTION_READ_TIMEOUT = 60000;
 
 	private Configuration configuration;
 
@@ -79,15 +80,28 @@ public class Connector {
 		HttpURLConnection conn = null;
 
 		try {
-			conn = uploadTestRun(testRun);
- 
-			if (conn.getResponseCode() == 202) {
-				LOGGER.info("The test run was successfully sent to Probe Dock.");
-				return true;
-			} else {
-				LOGGER.severe("Unable to send the test run to Probe Dock. Return code: " + conn.getResponseCode() + ", content: " + readInputStream(conn.getInputStream()));
+			try {
+				conn = uploadTestRun(testRun);
 			}
-		} catch (IOException ioe) {
+			catch (SocketTimeoutException ste) {
+				LOGGER.log(Level.SEVERE, "Unable to send the results to the server due to a timeout exception", ste);
+				throw ste;
+			}
+
+			try {
+				if (conn.getResponseCode() == 202) {
+					LOGGER.info("The test run was successfully sent to Probe Dock.");
+					return true;
+				} else {
+					LOGGER.severe("Unable to send the test run to Probe Dock. Return code: " + conn.getResponseCode() + ", content: " + readInputStream(conn.getInputStream()));
+				}
+			}
+			catch (SocketTimeoutException ste) {
+				LOGGER.log(Level.SEVERE, "Unable to read the response from the server du to a timeout exception", ste);
+				throw ste;
+			}
+		}
+		catch (IOException ioe) {
 			if (!configuration.isPayloadPrint()) {
 				try (OutputStreamWriter baos = new OutputStreamWriter(new ByteArrayOutputStream(), Charset.forName(Constants.ENCODING).newEncoder())) {
 					serializer.serializePayload(baos, testRun, true);
@@ -123,6 +137,7 @@ public class Connector {
 		conn.setRequestProperty("Authorization", "Bearer " + configuration.getServerConfiguration().getApiToken());
 
 		conn.setConnectTimeout(CONNECTION_TIMEOUT);
+		conn.setReadTimeout(CONNECTION_READ_TIMEOUT);
 		conn.setDoOutput(true);
 		conn.setDoInput(true);
 
